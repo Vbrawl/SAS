@@ -2,7 +2,7 @@
 This is a micro-service daemon designed to send automated messages through the [Telnyx SMS Gateway](https://telnyx.com/) API.
 
 ## Tools
-- python 3.9
+- python 3.12.3
 
 ## Features
 - [Templates](#templates)
