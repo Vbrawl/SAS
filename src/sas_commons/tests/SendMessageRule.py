@@ -34,6 +34,9 @@ def test_SendMessageRule__init():
     with pytest.raises(ValueError):
         smr7 = SendMessageRule(start_date=datetime(2000, 1, 1), end_date=datetime(2000, 1, 2), last_executed=datetime(2000, 1, 3))
 
+    smr8 = SendMessageRule(start_date=datetime(2000, 1, 1), id=1)
+    assert smr8.id == 1
+
 
 def test_SendMessageRule__next_execution_date():
     smr = SendMessageRule(datetime(2000, 1, 1))
