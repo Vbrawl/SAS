@@ -54,3 +54,12 @@ class SendMessageRule:
         next_date += self._interval
         # AT THIS POINT: next_date holds the next execution date (Could be in the past)
         return next_date
+    
+    @property
+    def next_execution(self) -> timedelta:
+        dtnow = datetime.now()
+        # next_execution_date
+        ned = self.next_execution_date
+
+        if dtnow >= ned: return timedelta() # 0
+        return ned - dtnow

@@ -48,3 +48,15 @@ def test_SendMessageRule__next_execution_date():
     tomorrow = datetime.now() + timedelta(days=1)
     smr4 = SendMessageRule(tomorrow)
     assert smr4.next_execution_date == tomorrow
+
+
+def test_SendMessageRule__next_execution():
+    smr = SendMessageRule(datetime(2000, 1, 1))
+    assert smr.next_execution == timedelta()
+
+    today = datetime.now()
+    smr2 = SendMessageRule(today + timedelta(days=1))
+    assert smr2.next_execution == timedelta(days=1)
+
+    smr3 = SendMessageRule(today - timedelta(days=1), interval=timedelta(days=2))
+    assert smr3.next_execution == timedelta(days=1)
