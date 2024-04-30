@@ -21,14 +21,17 @@ from datetime import datetime, timedelta
 
 
 class SendMessageRule:
-    def __init__(self, start_date:datetime|None = None, end_date:datetime|None = None,
+    def __init__(self, start_date:datetime, end_date:datetime|None = None,
                  interval:timedelta|None = None, last_executed:datetime|None = None):
-        if start_date is not None and end_date is not None and (start_date >= end_date):
+        if end_date is not None and (start_date >= end_date):
             raise ValueError(f"{self.__class__.__qualname__}: Constraint start_date({start_date}) < end_date({end_date}): Failed.")
-        if start_date is not None and last_executed is not None and (start_date > last_executed):
+        # start_date and end_date are valid
+        
+        if last_executed is not None and (start_date > last_executed):
             raise ValueError(f"{self.__class__.__qualname__}: Constraint start_date({start_date}) <= last_executed({last_executed}): Failed")
         if last_executed is not None and end_date is not None and (last_executed > end_date):
             raise ValueError(f"{self.__class__.__qualname__}: Constraint last_executed({last_executed}) <= end_date({end_date}): Failed")
+        # last_executed is valid
 
         self._start_date = start_date
         self._end_date = end_date
