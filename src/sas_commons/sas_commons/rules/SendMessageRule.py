@@ -35,5 +35,22 @@ class SendMessageRule:
 
         self._start_date = start_date
         self._end_date = end_date
-        self._interval = interval
+        self._interval = interval if interval is not None else timedelta()
         self._last_executed = last_executed
+
+    @property
+    def next_execution_date(self) -> datetime:
+        dtnow = datetime.now()
+
+        # If the starting date is in the future we don't need to add any intervals.
+        if self._start_date >= dtnow:
+            return self._start_date
+
+        next_date = self._last_executed
+        if next_date is None:
+            next_date = self._start_date
+        # AT THIS POINT: next_date is a datetime with the last available known execution
+
+        next_date += self._interval
+        # AT THIS POINT: next_date holds the next execution date (Could be in the past)
+        return next_date
