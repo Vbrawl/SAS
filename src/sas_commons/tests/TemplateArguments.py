@@ -17,15 +17,15 @@ from sas_commons.templates import TemplateArguments
 import pytest
 
 
-def test_TemplateArguments__init(self):
+def test_TemplateArguments__init():
     ta = TemplateArguments(a=2, b=3)
     assert ta.a == 2 # type: ignore
     assert ta.b == 3 # type: ignore
-    with pytest.raises(ValueError): ta.c == 4 # this doesn't exist and we know it
-    with pytest.raises(ValueError): ta.d == 5 # this doesn't exist and we know it
+    with pytest.raises(AttributeError): ta.c == 4 # this doesn't exist and we know it
+    with pytest.raises(AttributeError): ta.d == 5 # this doesn't exist and we know it
 
     ta2 = TemplateArguments(c=4, d=5)
-    with pytest.raises(ValueError): ta2.a == 2 # this doesn't exist and we know it
-    with pytest.raises(ValueError): ta2.b == 3 # this doesn't exist and we know it
+    with pytest.raises(AttributeError): ta2.a == 2 # this doesn't exist and we know it
+    with pytest.raises(AttributeError): ta2.b == 3 # this doesn't exist and we know it
     assert ta2.c == 4 # type: ignore
     assert ta2.d == 5 # type: ignore
