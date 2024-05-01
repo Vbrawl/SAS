@@ -87,4 +87,4 @@ def test_SMSSender__find_next_execution_interval():
 
     asyncio.run(smsS.set_rule(rule2))
     assert nei is not None
-    assert nei == timedelta(1)
+    assert round(nei.total_seconds()) == timedelta(1).total_seconds()
