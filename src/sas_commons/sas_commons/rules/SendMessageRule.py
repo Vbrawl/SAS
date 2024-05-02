@@ -18,13 +18,13 @@ dates and other info necessary for sending messages at certain intervals/dates. 
 is part of the "SAS-Commons" module of the "SAS" project.
 '''
 from datetime import datetime, timedelta
-from ..templates import TemplateArguments
+from ..templates import Template, TemplateArguments
 
 
 class SendMessageRule:
     def __init__(self, start_date:datetime, end_date:datetime|None = None,
                  interval:timedelta|None = None, last_executed:datetime|None = None,
-                 template:TemplateArguments|None = None, id:int|None = None):
+                 template:Template|None = None, recipients:list[TemplateArguments] = [], id:int|None = None):
         if end_date is not None and (start_date >= end_date):
             raise ValueError(f"{self.__class__.__qualname__}: Constraint start_date({start_date}) < end_date({end_date}): Failed.")
         # start_date and end_date are valid
@@ -40,6 +40,7 @@ class SendMessageRule:
         self._interval = interval if interval is not None else timedelta()
         self._last_executed = last_executed
         self.template = template
+        self.recipients = recipients
         self.id = id
 
     @property
