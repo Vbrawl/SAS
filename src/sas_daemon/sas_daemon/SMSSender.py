@@ -42,6 +42,10 @@ class SMSSender:
     async def set_rule(self, rule:SendMessageRule):
         if rule.id is None:
             raise RuntimeError("All rules must have an ID before entering the rule-list")
+        if rule.template is None:
+            raise RuntimeError("All rules must have a template before entering the rule-list")
+        if not rule.recipients:
+            raise RuntimeError("All rules must have at least 1 participant before entering the rule-list")
 
         async with self.rules_lock:
             index = await self.__find_rule_index(rule.id, auto_lock=False)
@@ -98,9 +102,22 @@ class SMSSender:
         timedelta_obj = timedelta() # Cache timedelta()
         while True:
             ready_rules = await self._find_ready_rules()
+            invalid_rules = []
 
             for rule in ready_rules:
-                pass # TODO: send
+                try:
+                    await self.send_sms(rule)
+                except RuntimeError:
+                    invalid_rules.append(rule)
+            
+            # TODO: Make a separate function with proper exception handling
+            async with self.rules_lock:
+                while invalid_rules:
+                    try:
+                        rule = invalid_rules.pop()
+                        self.rules.remove(rule)
+                    except Exception:
+                        pass
 
             next_execution = await self._find_next_execution_interval()
 
@@ -108,3 +125,14 @@ class SMSSender:
                 # Don't have ready rules
                 await asyncio.sleep(next_execution.total_seconds() if next_execution is not None else self.idle_interval)
             # else: We have ready rules, we simply loop back to send the messages.
+    
+    async def send_sms(self, rule:SendMessageRule):
+        if rule.template is None:
+            raise RuntimeError("A rule must have a template to be valid for sending an SMS")
+        if not rule.recipients:
+            raise RuntimeError("A rule must have at least 1 recipient to be valid for sending an SMS")
+
+        for recipient in rule.recipients:
+            msg = rule.template.compileFor(recipient)
+            pass # TODO: Send SMS
+            # TODO: Update rule last_executed.
