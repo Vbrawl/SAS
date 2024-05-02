@@ -13,5 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from .TemplateArguments import TemplateArguments
-from .Template import Template
+
+
+from sas_commons.templates import Template, TemplateArguments
+
+
+def test_template():
+    temp = Template("$(first_name), $(telephone), $(address)")
+    msg = temp.compileFor(TemplateArguments(first_name="John", telephone="123", address="City, 0"))
+    expected_msg = "John, 123, City, 0"
+    assert msg == expected_msg
