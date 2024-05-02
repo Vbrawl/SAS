@@ -41,12 +41,11 @@ class Template:
         offset = 0
         # marks need to be in ascending order
         for mark in marks:
-            if not hasattr(args, mark[2]):
+            val = getattr(args, mark[2], None)
+            if val is None:
                 raise TypeError("args doesn't have all the required attributes.")
 
-            val = getattr(args, mark[2])
             message = message[:offset+mark[0]] + val + message[offset+mark[1]+1:]
-
             placeholder_len = (mark[1] - mark[0])
             val_len = len(val)
             offset += val_len - placeholder_len - 1
