@@ -71,3 +71,6 @@ class SendMessageRule:
 
         if dtnow >= ned: return timedelta() # 0
         return ned - dtnow
+    
+    def report_executed(self):
+        self._last_executed = datetime.now()

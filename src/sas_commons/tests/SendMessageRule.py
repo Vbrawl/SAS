@@ -74,3 +74,10 @@ def test_SendMessageRule__next_execution(template_argument_list, template):
 
     smr3 = SendMessageRule(0, template_argument_list, template, today - timedelta(days=1), interval=timedelta(days=2))
     assert smr3.next_execution == timedelta(days=1)
+
+
+def test_SendMessageRule__report_executed(template_argument_list, template):
+    smr = SendMessageRule(0, template_argument_list, template, datetime(2000, 1, 1), interval=timedelta(1))
+    assert smr.next_execution == timedelta()
+    smr.report_executed()
+    assert smr.next_execution_date == datetime.now() + timedelta(1)
