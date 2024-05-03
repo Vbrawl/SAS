@@ -22,9 +22,9 @@ from ..templates import Template, TemplateArguments
 
 
 class SendMessageRule:
-    def __init__(self, start_date:datetime, end_date:datetime|None = None,
-                 interval:timedelta|None = None, last_executed:datetime|None = None,
-                 template:Template|None = None, recipients:list[TemplateArguments] = [], id:int|None = None):
+    def __init__(self, id:int, recipients:list[TemplateArguments], template:Template,
+                 start_date:datetime, end_date:datetime|None = None,
+                 interval:timedelta|None = None, last_executed:datetime|None = None):
         if end_date is not None and (start_date >= end_date):
             raise ValueError(f"{self.__class__.__qualname__}: Constraint start_date({start_date}) < end_date({end_date}): Failed.")
         # start_date and end_date are valid
@@ -34,6 +34,9 @@ class SendMessageRule:
         if last_executed is not None and end_date is not None and (last_executed > end_date):
             raise ValueError(f"{self.__class__.__qualname__}: Constraint last_executed({last_executed}) <= end_date({end_date}): Failed")
         # last_executed is valid
+
+        if len(recipients) == 0:
+            raise ValueError(f"{self.__class__.__qualname__}: Constraint len(recipients) > 0: Failed")
 
         self._start_date = start_date
         self._end_date = end_date

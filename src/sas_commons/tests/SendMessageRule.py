@@ -18,48 +18,59 @@ This file contains tests for the SendMessageRule class.
 
 import pytest
 from sas_commons import SendMessageRule
+from sas_commons.templates import TemplateArguments, Template
 from datetime import datetime, timedelta
 
 
-def test_SendMessageRule__init():
-    smr = SendMessageRule(datetime(2000, 1, 1)) # No error
-    smr2 = SendMessageRule(datetime(2000, 1, 1), datetime(2000, 1, 2)) # No error
-    smr3 = SendMessageRule(datetime(2000, 1, 1), last_executed=datetime(2000, 1, 1)) # No error
-    smr4 = SendMessageRule(start_date=datetime(2000, 1, 1), last_executed=datetime(2000, 1, 2), end_date=datetime(2000, 1, 2))
+@pytest.fixture
+def template_argument_list():
+    return [TemplateArguments()]
+
+@pytest.fixture
+def template():
+    return Template("Message")
+
+def test_SendMessageRule__init(template_argument_list, template):
+    smr = SendMessageRule(0, template_argument_list, template, datetime(2000, 1, 1)) # No error
+    smr2 = SendMessageRule(0, template_argument_list, template, datetime(2000, 1, 1), datetime(2000, 1, 2)) # No error
+    smr3 = SendMessageRule(0, template_argument_list, template, datetime(2000, 1, 1), last_executed=datetime(2000, 1, 1)) # No error
+    smr4 = SendMessageRule(0, template_argument_list, template, start_date=datetime(2000, 1, 1), last_executed=datetime(2000, 1, 2), end_date=datetime(2000, 1, 2))
 
     with pytest.raises(ValueError):
-        smr5 = SendMessageRule(start_date=datetime(2000, 1, 2), end_date=datetime(2000, 1, 1))
+        smr5 = SendMessageRule(0, template_argument_list, template, start_date=datetime(2000, 1, 2), end_date=datetime(2000, 1, 1))
     with pytest.raises(ValueError):
-        smr6 = SendMessageRule(start_date=datetime(2000, 1, 2), last_executed=datetime(2000, 1, 1))
+        smr6 = SendMessageRule(0, template_argument_list, template, start_date=datetime(2000, 1, 2), last_executed=datetime(2000, 1, 1))
     with pytest.raises(ValueError):
-        smr7 = SendMessageRule(start_date=datetime(2000, 1, 1), end_date=datetime(2000, 1, 2), last_executed=datetime(2000, 1, 3))
+        smr7 = SendMessageRule(0, template_argument_list, template, start_date=datetime(2000, 1, 1), end_date=datetime(2000, 1, 2), last_executed=datetime(2000, 1, 3))
 
-    smr8 = SendMessageRule(start_date=datetime(2000, 1, 1), id=1)
+    smr8 = SendMessageRule(1, template_argument_list, template, start_date=datetime(2000, 1, 1))
     assert smr8.id == 1
+    assert smr8.recipients == template_argument_list
+    assert smr8.template == template
 
 
-def test_SendMessageRule__next_execution_date():
-    smr = SendMessageRule(datetime(2000, 1, 1))
+def test_SendMessageRule__next_execution_date(template_argument_list, template):
+    smr = SendMessageRule(0, template_argument_list, template, datetime(2000, 1, 1))
     assert smr.next_execution_date == datetime(2000, 1, 1)
 
-    smr2 = SendMessageRule(datetime(2000, 1, 1), interval=timedelta(5))
+    smr2 = SendMessageRule(0, template_argument_list, template, datetime(2000, 1, 1), interval=timedelta(5))
     assert smr2.next_execution_date == datetime(2000, 1, 6)
 
-    smr3 = SendMessageRule(datetime(2000, 1, 1), last_executed = datetime(2000, 1, 2), interval = timedelta(5))
+    smr3 = SendMessageRule(0, template_argument_list, template, datetime(2000, 1, 1), last_executed = datetime(2000, 1, 2), interval = timedelta(5))
     assert smr3.next_execution_date == datetime(2000, 1, 7)
 
     tomorrow = datetime.now() + timedelta(days=1)
-    smr4 = SendMessageRule(tomorrow)
+    smr4 = SendMessageRule(0, template_argument_list, template, tomorrow)
     assert smr4.next_execution_date == tomorrow
 
 
-def test_SendMessageRule__next_execution():
-    smr = SendMessageRule(datetime(2000, 1, 1))
+def test_SendMessageRule__next_execution(template_argument_list, template):
+    smr = SendMessageRule(0, template_argument_list, template, datetime(2000, 1, 1))
     assert smr.next_execution == timedelta()
 
     today = datetime.now()
-    smr2 = SendMessageRule(today + timedelta(days=1))
+    smr2 = SendMessageRule(0, template_argument_list, template, today + timedelta(days=1))
     assert smr2.next_execution == timedelta(days=1)
 
-    smr3 = SendMessageRule(today - timedelta(days=1), interval=timedelta(days=2))
+    smr3 = SendMessageRule(0, template_argument_list, template, today - timedelta(days=1), interval=timedelta(days=2))
     assert smr3.next_execution == timedelta(days=1)
