@@ -64,8 +64,10 @@ class SendMessageRule:
         next_date += self._interval
         # AT THIS POINT: next_date holds the next execution date (Could be in the past)
 
-        if self._end_date:
-            if next_date > self._end_date:
+        if self._end_date and next_date > self._end_date:
+            if self._last_executed and self._last_executed < self._end_date:
+                return self._end_date
+            else:
                 return None
         return next_date
     
