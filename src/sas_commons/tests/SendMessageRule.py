@@ -81,3 +81,6 @@ def test_SendMessageRule__report_executed(template_argument_list, template):
     assert smr.next_execution == timedelta()
     smr.report_executed()
     assert smr.next_execution_date == datetime.now() + timedelta(1)
+
+# TODO: write test_SendMessageRule__schedule
+# TODO: write test_SendMessageRule__infschedule

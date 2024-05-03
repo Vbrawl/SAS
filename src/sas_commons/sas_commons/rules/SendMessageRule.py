@@ -17,8 +17,10 @@ This file (SendMessageRule.py) contains a class (SendMessageRule) which holds in
 dates and other info necessary for sending messages at certain intervals/dates. This file
 is part of the "SAS-Commons" module of the "SAS" project.
 '''
+from typing import Callable, Coroutine
 from datetime import datetime, timedelta
 from ..templates import Template, TemplateArguments
+import asyncio
 
 
 class SendMessageRule:
@@ -47,7 +49,7 @@ class SendMessageRule:
         self.id = id
 
     @property
-    def next_execution_date(self) -> datetime:
+    def next_execution_date(self) -> datetime|None:
         dtnow = datetime.now()
 
         # If the starting date is in the future we don't need to add any intervals.
@@ -61,16 +63,43 @@ class SendMessageRule:
 
         next_date += self._interval
         # AT THIS POINT: next_date holds the next execution date (Could be in the past)
+
+        if self._end_date:
+            if next_date > self._end_date:
+                return None
         return next_date
     
     @property
-    def next_execution(self) -> timedelta:
+    def next_execution(self) -> timedelta|None:
         dtnow = datetime.now()
         # next_execution_date
         ned = self.next_execution_date
 
+        if not ned: return None
         if dtnow >= ned: return timedelta() # 0
         return ned - dtnow
     
     def report_executed(self):
         self._last_executed = datetime.now()
+
+    async def schedule(self, callback:Callable[[TemplateArguments, str], Coroutine]):
+        # Wait until execution
+        ne = self.next_execution
+        if ne and ne != timedelta(0): await asyncio.sleep(ne.total_seconds())
+
+        # Prepare callback calls
+        send_op:list[asyncio.Task] = []
+        for recipient in self.recipients:
+            msg = self.template.compileFor(recipient)
+            send_op.append(
+                asyncio.create_task(callback(recipient, msg)))
+        
+        # Execute callback send operations
+        await asyncio.wait(send_op)
+
+        # update execution time
+        self.report_executed()
+
+    async def infschedule(self, callback:Callable[[TemplateArguments, str], Coroutine]):
+        while self.next_execution_date is not None:
+            await self.schedule(callback)
