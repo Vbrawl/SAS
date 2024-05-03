@@ -53,7 +53,7 @@ class SendMessageRule:
         dtnow = datetime.now()
 
         # If the starting date is in the future we don't need to add any intervals.
-        if self._start_date >= dtnow:
+        if self._last_executed is None and self._start_date >= dtnow:
             return self._start_date
 
         next_date = self._last_executed
