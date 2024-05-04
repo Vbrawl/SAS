@@ -115,3 +115,16 @@ class Database:
 
         self.conn.execute("INSERT INTO `People` (first_name, last_name, telephone, address) VALUES (?, ?, ?, ?);", (first_name, last_name, telephone, address))
         self.conn.commit()
+    
+    def alter_person(self, person:PersonTemplateArguments, id:int|None = None):
+        if id is None:
+            id = getattr(person, "id", None)
+        if id is None:
+            raise ValueError("You must provide an ID either through the parameters or person(id)")
+        telephone:str = person.telephone
+        first_name:str|None = getattr(person, "first_name", None)
+        last_name:str|None = getattr(person, "last_name", None)
+        address:str|None = getattr(person, "address", None)
+
+        self.conn.execute("UPDATE `People` SET `first_name`=?, `last_name`=?, `telephone`=?, `address`=? WHERE `id`=?", (first_name, last_name, telephone, address, id))
+        self.conn.commit()
