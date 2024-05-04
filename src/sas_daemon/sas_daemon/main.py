@@ -16,8 +16,7 @@ limitations under the License.
 This file (main.py) is the main starting point of the "Daemon" component
 of the project (SAS).
 '''
-from sas_commons import SendMessageRule
-from sas_commons.templates import TemplateArguments, Template
+from sas_commons import SendMessageRule, TemplateArguments, Template
 from datetime import datetime, timedelta
 import asyncio
 
