@@ -91,3 +91,15 @@ class Database:
             telephone=x[3],
             address=x[4]
             ), res))
+    
+    def add_person(self, person:TemplateArguments):
+        telephone:str|None = getattr(person, "telephone", None)
+        if telephone is None:
+            raise TypeError("person must have telephone to be a valid person.")
+        
+        first_name:str|None = getattr(person, "first_name", None)
+        last_name:str|None = getattr(person, "last_name", None)
+        address:str|None = getattr(person, "address", None)
+
+        self.conn.execute("INSERT INTO `People` (first_name, last_name, telephone, address) VALUES (?, ?, ?, ?);", (first_name, last_name, telephone, address))
+        self.conn.commit()
