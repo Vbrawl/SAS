@@ -15,3 +15,4 @@ limitations under the License.
 '''
 from .TemplateArguments import TemplateArguments
 from .Template import Template
+from .PersonTemplateArguments import PersonTemplateArguments
