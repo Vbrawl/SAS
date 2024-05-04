@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from .templates import TemplateArguments
+from .templates import PersonTemplateArguments
 import sqlite3
 import os
 
@@ -81,13 +81,13 @@ class Database:
         self.conn.commit()
     
 
-    def get_person(self, id:int) -> TemplateArguments|None:
+    def get_person(self, id:int) -> PersonTemplateArguments|None:
         cur = self.conn.execute('SELECT `first_name`, `last_name`, `telephone`, `address` FROM `People` WHERE `id`=?', (id,))
-        row:tuple[str, ...]|None = cur.fetchone()
+        row:tuple[str|None, str|None, str, str|None]|None = cur.fetchone()
         if row:
-            return TemplateArguments(id=id, first_name=row[0], last_name=row[1], telephone=row[2], address=row[3])
+            return PersonTemplateArguments(id=id, first_name=row[0], last_name=row[1], telephone=row[2], address=row[3])
 
-    def get_people(self, limit:int|None = None, offset:int|None = None) -> list[TemplateArguments]:
+    def get_people(self, limit:int|None = None, offset:int|None = None) -> list[PersonTemplateArguments]:
         query:str = 'SELECT `id`, `first_name`, `last_name`, `telephone`, `address` FROM `People`'
         params:tuple = tuple()
         if limit is not None:
@@ -99,7 +99,7 @@ class Database:
         cur = self.conn.execute(query, params)
 
         res:list[tuple[int, str, str, str, str]] = cur.fetchall()
-        return list(map(lambda x: TemplateArguments(
+        return list(map(lambda x: PersonTemplateArguments(
             id=x[0],
             first_name=x[1],
             last_name=x[2],
@@ -107,11 +107,8 @@ class Database:
             address=x[4]
             ), res))
     
-    def add_person(self, person:TemplateArguments):
-        telephone:str|None = getattr(person, "telephone", None)
-        if telephone is None:
-            raise TypeError("person must have telephone to be a valid person.")
-        
+    def add_person(self, person:PersonTemplateArguments):
+        telephone:str = person.telephone
         first_name:str|None = getattr(person, "first_name", None)
         last_name:str|None = getattr(person, "last_name", None)
         address:str|None = getattr(person, "address", None)
