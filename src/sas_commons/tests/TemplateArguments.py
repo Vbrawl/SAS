@@ -29,3 +29,8 @@ def test_TemplateArguments__init():
     with pytest.raises(AttributeError): ta2.b == 3 # this doesn't exist and we know it
     assert ta2.c == 4 # type: ignore
     assert ta2.d == 5 # type: ignore
+
+def test_TemplateArguments__repr():
+    ta = TemplateArguments(a=2, b='str')
+
+    assert repr(ta) == "TemplateArguments(a=2, b='str')" or repr(ta) == 'TemplateArguments(a=2, b="str")'

@@ -19,3 +19,6 @@ from dataclasses import dataclass
 class TemplateArguments:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+    
+    def __repr__(self) -> str:
+        return f"{self.__class__.__qualname__}({', '.join(map(lambda x: x[0]+'='+repr(x[1]), self.__dict__.items()))})"
