@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from .templates import PersonTemplateArguments, Template
+from .rules import SendMessageRule
+from datetime import datetime, timedelta
 import sqlite3
 import os
 
@@ -50,16 +52,16 @@ class Database:
                           `message` TEXT NOT NULL,
                           PRIMARY KEY(`id`));''')
         
-        ########################################################
-        # Create `TimeDeltas` table                            #
-        # This table holds information about timedelta objects #
-        ########################################################
-        self.conn.execute('''CREATE TABLE IF NOT EXISTS `TimeDeltas` (
-                          `id` INTEGER NOT NULL UNIQUE,
-                          `days` INTEGER NOT NULL,
-                          `seconds` INTEGER NOT NULL,
-                          `microseconds` INTEGER NOT NULL,
-                          PRIMARY KEY(`id`));''')
+        ############################################
+        # Create `PeopleInRule` table              #
+        # This table links people to message rules #
+        ############################################
+        self.conn.execute('''CREATE TABLE IF NOT EXISTS `PeopleInRule` (
+                          `personID` INTEGER NOT NULL,
+                          `ruleID` INTEGER NOT NULL,
+                          PRIMARY KEY (`personID`, `ruleID`),
+                          CONSTRAINT FK_personID FOREIGN KEY (`personID`) REFERENCES `People`(`id`),
+                          CONSTRAINT FK_ruleID FOREIGN KEY (`ruleID`) REFERENCES `SendMessageRule`(`id`));''')
 
         ##############################################################
         # Create `SendMessageRule` table                             #
@@ -71,11 +73,14 @@ class Database:
                           `templateID` INTEGER NOT NULL,
                           `start_date` DATETIME NOT NULL,
                           `end_date` DATETIME,
-                          `intervalID` INTEGER,
+                          `interval_weeks` INTEGER,
+                          `interval_days` INTEGER,
+                          `interval_hours` INTEGER,
+                          `interval_minutes` INTEGER,
+                          `interval_seconds` INTEGER,
                           `last_executed` DATETIME,
                           PRIMARY KEY(`id`),
-                          CONSTRAINT FK_templateID FOREIGN KEY (`templateID`) REFERENCES `Templates`(`id`),
-                          CONSTRAINT FK_intervalID FOREIGN KEY (`intervalID`) REFERENCES `TimeDeltas`(`id`));''')
+                          CONSTRAINT FK_templateID FOREIGN KEY (`templateID`) REFERENCES `Templates`(`id`));''')
 
         self.conn.commit()
     
@@ -134,7 +139,7 @@ class Database:
         if res:
             return Template(id=id, message=res[0])
     
-    def get_templates(self, limit:int|None = None, offset:int|None = None):
+    def get_templates(self, limit:int|None = None, offset:int|None = None) -> list[Template]:
         query:str = 'SELECT `id`, `message` FROM `Templates`'
         params:tuple = tuple()
         if limit is not None:
@@ -161,3 +166,23 @@ class Database:
         message = template._message
         self.conn.execute("UPDATE `Templates` SET `message`=? WHERE `id`=?;", (message,id))
         self.conn.commit()
+    
+    def get_rule(self, id:int) -> SendMessageRule|None:
+        def asInt(x:int|None) -> int:
+            return x if x is not None else 0
+
+        cur = self.conn.execute("SELECT T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval_weeks`, SMR.`interval_days`, SMR.`interval_hours`, SMR.`interval_minutes`, SMR.`interval_seconds`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id WHERE SMR.id=?;", (id,))
+        res:tuple[int, str, datetime, datetime|None, int|None, int|None, int|None, int|None, int|None, datetime|None]|None = cur.fetchone()
+        if res:
+            cur = cur.execute("SELECT `P`.`id`, `P`.`first_name`, `P`.`last_name`, `P`.`telephone`, `P`.`address` FROM `PeopleInRule` as `PIR` JOIN `People` AS `P` ON `PIR`.`personID` = `P`.`id` WHERE `PIR`.`ruleID`=?;", (id,))
+            recipients:list[tuple[int, str, str, str, str]] = cur.fetchall()
+
+            return SendMessageRule(
+                list(map(lambda x: PersonTemplateArguments(id=x[0], first_name=x[1], last_name=x[2], telephone=x[3], address=x[4]), recipients)),
+                Template(id=res[0], message=res[1]),
+                res[2],
+                res[3],
+                timedelta(weeks=asInt(res[4]), days=asInt(res[5]), hours=asInt(res[6]), minutes=asInt(res[7]), seconds=asInt(res[8])),
+                res[9],
+                id=id
+            )
