@@ -51,7 +51,8 @@ class Template:
             offset += val_len - placeholder_len - 1
         return message
 
-    def __init__(self, message:str):
+    def __init__(self, message:str, id:int|None = None):
+        self.id = id
         self._message = message
         self._marks = self._parse_message(message)
     
