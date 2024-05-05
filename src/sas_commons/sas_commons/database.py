@@ -132,7 +132,7 @@ class Database:
         cur = self.conn.execute("SELECT `message` FROM `Templates` WHERE `id`=?;", (id,))
         res:tuple[str]|None = cur.fetchone()
         if res:
-            return Template(res[0])
+            return Template(id=id, message=res[0])
     
     def get_templates(self, limit:int|None = None, offset:int|None = None):
         query:str = 'SELECT `id`, `message` FROM `Templates`'
@@ -146,3 +146,18 @@ class Database:
         cur = self.conn.execute(query, params)
         res:list[tuple[int, str]] = cur.fetchall()
         return list(map(lambda x: Template(id=x[0], message=x[1]), res))
+    
+    def add_template(self, template:Template):
+        message = template._message
+        self.conn.execute("INSERT INTO `Templates` (`message`) VALUES (?)", (message,))
+        self.conn.commit()
+    
+    def alter_template(self, template:Template, id:int|None = None):
+        if id is None:
+            id = template.id
+        if id is None:
+            raise ValueError("You must provide an ID either through the parameters or template(id)")
+        
+        message = template._message
+        self.conn.execute("UPDATE `Templates` SET `message`=? WHERE `id`=?;", (message,id))
+        self.conn.commit()
