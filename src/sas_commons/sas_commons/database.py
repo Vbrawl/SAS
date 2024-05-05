@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from .templates import PersonTemplateArguments
+from .templates import PersonTemplateArguments, Template
 import sqlite3
 import os
 
@@ -47,7 +47,6 @@ class Database:
         ########################################################
         self.conn.execute('''CREATE TABLE IF NOT EXISTS `Templates` (
                           `id` INTEGER NOT NULL UNIQUE,
-                          `label` TEXT,
                           `message` TEXT NOT NULL,
                           PRIMARY KEY(`id`));''')
         
@@ -128,3 +127,22 @@ class Database:
 
         self.conn.execute("UPDATE `People` SET `first_name`=?, `last_name`=?, `telephone`=?, `address`=? WHERE `id`=?", (first_name, last_name, telephone, address, id))
         self.conn.commit()
+    
+    def get_template(self, id:int) -> Template|None:
+        cur = self.conn.execute("SELECT `message` FROM `Templates` WHERE `id`=?;", (id,))
+        res:tuple[str]|None = cur.fetchone()
+        if res:
+            return Template(res[0])
+    
+    def get_templates(self, limit:int|None = None, offset:int|None = None):
+        query:str = 'SELECT `id`, `message` FROM `Templates`'
+        params:tuple = tuple()
+        if limit is not None:
+            query += " LIMIT ?"
+            params = (limit,)
+            if offset is not None:
+                query += " OFFSET ?"
+                params = (limit, offset)
+        cur = self.conn.execute(query, params)
+        res:list[tuple[int, str]] = cur.fetchall()
+        return list(map(lambda x: Template(id=x[0], message=x[1]), res))
