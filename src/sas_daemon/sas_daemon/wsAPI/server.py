@@ -1,5 +1,5 @@
 from typing import Callable, Coroutine, Any
-from sas_commons import Database, Template
+from sas_commons import Database, Template, PersonTemplateArguments
 import json
 import asyncio
 import websockets
@@ -41,10 +41,10 @@ class WSAPI:
                 "remove": self.template_remove
             },
             "people": {
-                "get": ...,
-                "add": ...,
-                "alter": ...,
-                "remove": ...
+                "get": self.people_get,
+                "add": self.people_add,
+                "alter": self.people_alter,
+                "remove": self.people_remove
             },
             "rules": {
                 "get": ...,
@@ -155,11 +155,110 @@ class WSAPI:
 
             self.db.delete_template(id)
             return {"status": "success"}
-        except Exception as err:
-            print(err)
+        except Exception:
             return {}
-        
-        return {}
+    
+
+    async def people_get(self, **kwargs) -> dict:
+        try:
+            # get ID
+            id:int|None = kwargs.get("id", None)
+            if not isinstance(id, (int, type(None))): raise TypeError("Invalid ID parameter")
+
+            # get LIMIT
+            limit:int|None = kwargs.get("limit", None)
+            if not isinstance(limit, (int, type(None))): raise TypeError("Invalid LIMIT parameter")
+
+            # get OFFSET
+            offset:int|None = kwargs.get("offset", None)
+            if not isinstance(offset, (int, type(None))): raise TypeError("Invalid OFFSET parameter")
+
+            # Fetch a single template or multiple templates
+            results:list[PersonTemplateArguments] = []
+            if id is not None:
+                res = self.db.get_person(id)
+                if res is not None:
+                    results.append(res)
+            else:
+                results = self.db.get_people(limit, offset)
+            
+            return {
+                "status": list(map(
+                    lambda x: {
+                        "id": getattr(x, "id", None),
+                        "first_name": getattr(x, "first_name", None),
+                        "last_name": getattr(x, "last_name", None),
+                        "telephone": x.telephone,
+                        "address": getattr(x, "address", None)
+                    },
+                    results))
+            }
+        except Exception:
+            return {}
+
+    async def people_add(self, **kwargs) -> dict:
+        try:
+            id:int|None = kwargs["id"]
+            if not isinstance(id, int): raise TypeError("Invalid ID parameter")
+
+            first_name:str|None = kwargs.get("first_name", None)
+            if not isinstance(first_name, (str, type(None))): raise TypeError("Invalid FIRST_NAME parameter")
+
+            last_name:str|None = kwargs.get("last_name", None)
+            if not isinstance(last_name, (str, type(None))): raise TypeError("Invalid LAST_NAME parameter")
+
+            telephone:str = kwargs["telephone"]
+            if not isinstance(telephone, str): raise TypeError("Invalid TELEPHONE parameter")
+
+            address:str|None = kwargs.get("address", None)
+            if not isinstance(address, (str, type(None))): raise TypeError("Invalid ADDRESS parameter")
+
+            person = PersonTemplateArguments(
+                id=id,
+                first_name=first_name,
+                last_name=last_name,
+                telephone=telephone,
+                address=address)
+            id = self.db.add_person(person)
+
+            return {"id": id}
+        except Exception:
+            return {}
+
+    async def people_alter(self, **kwargs) -> dict:
+        try:
+            id:int|None = kwargs.get("id", None)
+            if not isinstance(id, (int, type(None))): raise TypeError("Invalid ID parameter")
+
+            first_name:str|None = kwargs.get("first_name", None)
+            if not isinstance(first_name, (str, type(None))): raise TypeError("Invalid FIRST_NAME parameter")
+
+            last_name:str|None = kwargs.get("last_name", None)
+            if not isinstance(last_name, (str, type(None))): raise TypeError("Invalid LAST_NAME parameter")
+
+            telephone:str = kwargs["telephone"]
+            if not isinstance(telephone, str): raise TypeError("Invalid TELEPHONE parameter")
+
+            address:str|None = kwargs.get("address", None)
+            if not isinstance(address, (str, type(None))): raise TypeError("Invalid ADDRESS parameter")
+
+            person = PersonTemplateArguments(first_name=first_name, last_name=last_name, telephone=telephone, address=address)
+            self.db.alter_person(person=person)
+            
+            return {"status": "success"}
+        except Exception:
+            return {}
+
+    async def people_remove(self, **kwargs) -> dict:
+        try:
+            id:int = kwargs["id"]
+            if not isinstance(id, int): raise TypeError("Invalid ID parameter")
+
+            self.db.delete_template(id)
+            return {"status": "success"}
+        except Exception:
+            return {}
+
 
 
 
