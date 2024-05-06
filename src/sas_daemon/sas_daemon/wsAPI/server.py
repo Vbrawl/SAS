@@ -14,8 +14,11 @@ class WSAPI:
         To use this WS API send a JSON object:
         {
             "action": [...],
-            "
+            "parameters": {...}
         }
+
+        Where "action" is a list with identifiers (found in OPTIONS), it's basically a path to the endpoint.
+        "parameters" is a dictionary with parameter-value pairs.
 
         Args:
             db (Database): _description_
@@ -72,7 +75,6 @@ class WSAPI:
                 packet = json.loads(message)
                 print(packet)
                 task = self.navigate_options(packet["action"], packet["parameters"])
-                print(task)
                 res = json.dumps(await task) # type: ignore
                 print(res)
                 await ws.send(res)
@@ -141,10 +143,10 @@ class WSAPI:
 
             template = Template(message)
             self.db.alter_template(template, id)
+
+            return {"status": "success"}
         except Exception:
             return {}
-        
-        return {}
 
 
 
