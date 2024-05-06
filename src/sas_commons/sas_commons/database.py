@@ -171,6 +171,10 @@ class Database:
         self.conn.execute("UPDATE `People` SET `first_name`=?, `last_name`=?, `telephone`=?, `address`=? WHERE `id`=?", (first_name, last_name, telephone, address, id))
         self.conn.commit()
     
+    def delete_person(self, id:int):
+        self.conn.execute("DELETE FROM `People` WHERE `id`=?;", (id,))
+        self.conn.commit()
+    
     def get_template(self, id:int) -> Template|None:
         cur = self.conn.execute("SELECT `message` FROM `Templates` WHERE `id`=?;", (id,))
         res:tuple[str]|None = cur.fetchone()
@@ -221,6 +225,10 @@ class Database:
         
         message = template._message
         self.conn.execute("UPDATE `Templates` SET `message`=? WHERE `id`=?;", (message,id))
+        self.conn.commit()
+    
+    def delete_template(self, id:int):
+        self.conn.execute("DELETE FROM `Templates` WHERE `id`=?;", (id,))
         self.conn.commit()
     
     def get_rule(self, id:int) -> SendMessageRule|None:
@@ -329,3 +337,7 @@ class Database:
             if rid:
                 recipient.id = rid
                 self.link_recipient(recipient.id, id)
+    
+    def delete_rule(self, id:int):
+        self.conn.execute("DELETE FROM `SendMessageRule` WHERE `id`=?;", (id,))
+        self.conn.commit()
