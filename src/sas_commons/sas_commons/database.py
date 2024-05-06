@@ -299,3 +299,32 @@ class Database:
                 self.link_recipient(recipient.id, rule.id)
 
         self.conn.commit()
+    
+    def alter_rule(self, rule:SendMessageRule, id:int|None = None):
+        if id is None:
+            id = rule.id
+        if id is None:
+            raise ValueError("You must provide an ID either through the parameters or SendMessageRule(id)")
+        recipients = rule.recipients
+        template = rule.template
+        start_date = rule._start_date
+        end_date = rule._end_date
+        interval = rule._interval
+        last_executed = rule._last_executed
+
+        # ensure template exists
+        template.id = self.ensure_template(template)
+
+        # Clear recipients
+        self.unlink_all_recipients_from_rule(id)
+
+        # Update rule
+        self.conn.execute("UPDATE `SendMessageRule` SET `templateID`=?, `start_date`=?, `end_date`=?, `interval_days`=?, `interval_seconds`=?, `last_executed`=? WHERE `id`=?;",
+                          (template.id, start_date, end_date, interval.days, interval.seconds, last_executed, id))
+
+        # Link all new recipients
+        for recipient in recipients:
+            rid = self.ensure_person(recipient)
+            if rid:
+                recipient.id = rid
+                self.link_recipient(recipient.id, id)
