@@ -275,19 +275,27 @@ class Database:
         interval = rule._interval
         last_executed = rule._last_executed
 
-        # TODO: Add all people that don't exist to the database
-        for recipient in recipients:
-            rid = self.ensure_person(recipient)
-            if rid: recipient.id = rid
-            else: delattr(recipient, "id")
 
         # TODO: If the template doesn't exist add it to the database
         template.id = self.ensure_template(template)
         if template.id is None:
-            raise sqlite3.Error("Template existance could not be verified.")
+            raise sqlite3.Error("Template existence could not be verified.")
 
         # TODO: Insert all info to the database
         self.conn.execute('INSERT INTO `SendMessageRule` (`templateID`, `start_date`, `end_date`, `interval_days`, `interval_seconds`, `last_executed`) VALUES (?, ?, ?, ?, ?, ?)',
                           (template.id, start_date, end_date, interval.days, interval.seconds, last_executed))
+        cur = self.conn.execute("SELECT last_insert_rowid();")
+        res = cur.fetchone()
+        if res is None:
+            raise sqlite3.Error("Rule existence could not be verified.")
+        rule.id:int = res[0] # type: ignore
+
+        # TODO: Add all people that don't exist to the database
         # TODO: Mark all people in the recipients list as recipients of the rule
+        for recipient in recipients:
+            rid = self.ensure_person(recipient)
+            if rid:
+                recipient.id = rid
+                self.link_recipient(recipient.id, rule.id)
+
         self.conn.commit()
