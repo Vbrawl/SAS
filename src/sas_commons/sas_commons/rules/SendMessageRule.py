@@ -19,12 +19,12 @@ is part of the "SAS-Commons" module of the "SAS" project.
 '''
 from typing import Callable, Coroutine
 from datetime import datetime, timedelta
-from ..templates import Template, TemplateArguments
+from ..templates import Template, PersonTemplateArguments
 import asyncio
 
 
 class SendMessageRule:
-    def __init__(self, recipients:list[TemplateArguments], template:Template,
+    def __init__(self, recipients:list[PersonTemplateArguments], template:Template,
                  start_date:datetime, end_date:datetime|None = None,
                  interval:timedelta|None = None, last_executed:datetime|None = None, id:int|None = None):
         if end_date is not None and (start_date >= end_date):
@@ -84,7 +84,7 @@ class SendMessageRule:
     def report_executed(self):
         self._last_executed = datetime.now()
 
-    async def schedule(self, callback:Callable[[TemplateArguments, str], Coroutine]):
+    async def schedule(self, callback:Callable[[PersonTemplateArguments, str], Coroutine]):
         # Wait until execution
         ne = self.next_execution
         if ne and ne != timedelta(0): await asyncio.sleep(ne.total_seconds())
@@ -102,6 +102,6 @@ class SendMessageRule:
         # update execution time
         self.report_executed()
 
-    async def infschedule(self, callback:Callable[[TemplateArguments, str], Coroutine]):
+    async def infschedule(self, callback:Callable[[PersonTemplateArguments, str], Coroutine]):
         while self.next_execution_date is not None:
             await self.schedule(callback)
