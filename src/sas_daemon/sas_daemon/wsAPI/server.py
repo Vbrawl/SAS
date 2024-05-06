@@ -38,7 +38,7 @@ class WSAPI:
                 "get": self.template_get,
                 "add": self.template_add,
                 "alter": self.template_alter,
-                "remove": ...
+                "remove": self.template_remove
             },
             "people": {
                 "get": ...,
@@ -147,6 +147,19 @@ class WSAPI:
             return {"status": "success"}
         except Exception:
             return {}
+    
+    async def template_remove(self, **kwargs) -> dict:
+        try:
+            id:int = kwargs["id"]
+            if not isinstance(id, int): raise TypeError("Invalid ID parameter")
+
+            self.db.delete_template(id)
+            return {"status": "success"}
+        except Exception as err:
+            print(err)
+            return {}
+        
+        return {}
 
 
 
