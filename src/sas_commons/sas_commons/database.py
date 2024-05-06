@@ -179,7 +179,7 @@ class Database:
         res:tuple[int, str, datetime, datetime|None, int|None, int|None, int|None, int|None, int|None, datetime|None]|None = cur.fetchone()
         if res:
             return SendMessageRule(
-                self.get_recipients(id), # type: ignore
+                self.get_recipients(id),
                 Template(id=res[0], message=res[1]),
                 res[2],
                 res[3],
@@ -210,7 +210,7 @@ class Database:
             return list(map(lambda x:
                             SendMessageRule(
                                 id=x[0],
-                                recipients=self.get_recipients(x[0]), # type: ignore
+                                recipients=self.get_recipients(x[0]),
                                 template=Template(id=x[1], message=x[2]),
                                 start_date=x[3],
                                 end_date=x[4],
@@ -223,3 +223,16 @@ class Database:
                                 last_executed=x[10]
                             ), res))
         return []
+    
+    def add_rule(self, rule:SendMessageRule):
+        recipients = rule.recipients
+        template = rule.template
+        start_date = rule._start_date
+        end_date = rule._end_date
+        interval = rule._interval
+        last_executed = rule._last_executed
+
+        # TODO: Add all people that don't exist to the database
+        # TODO: If the template doesn't exist add it to the database
+        # TODO: Insert all info to the database
+        # TODO: Mark all people in the recipients list as recipients of the rule
