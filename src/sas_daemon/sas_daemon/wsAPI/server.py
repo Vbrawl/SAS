@@ -1,5 +1,5 @@
 from typing import Callable, Coroutine, Any
-from sas_commons import Database, Template, PersonTemplateArguments
+from sas_commons import Database, Template, PersonTemplateArguments, SendMessageRule
 import json
 import asyncio
 import websockets
@@ -21,9 +21,9 @@ class WSAPI:
         "parameters" is a dictionary with parameter-value pairs.
 
         Args:
-            db (Database): _description_
-            host (str, optional): _description_. Defaults to "0.0.0.0".
-            port (int, optional): _description_. Defaults to 8585.
+            db (Database): The database object to use.
+            host (str, optional): The address to use to serve the server. Defaults to "0.0.0.0".
+            port (int, optional): The port number to use for the server. Defaults to 8585.
         """
         self.db = db
         self.host = host
@@ -46,11 +46,11 @@ class WSAPI:
                 "alter": self.people_alter,
                 "remove": self.people_remove
             },
-            "rules": {
-                "get": ...,
-                "add": ...,
-                "alter": ...,
-                "remove": ...
+            "rule": {
+                "get": self.rule_get,
+                "add": self.rule_add,
+                "alter": self.rule_alter,
+                "remove": self.rule_remove
             },
             "people_in_rule": {
                 "get": ...,
@@ -198,9 +198,6 @@ class WSAPI:
 
     async def people_add(self, **kwargs) -> dict:
         try:
-            id:int|None = kwargs["id"]
-            if not isinstance(id, int): raise TypeError("Invalid ID parameter")
-
             first_name:str|None = kwargs.get("first_name", None)
             if not isinstance(first_name, (str, type(None))): raise TypeError("Invalid FIRST_NAME parameter")
 
@@ -254,10 +251,62 @@ class WSAPI:
             id:int = kwargs["id"]
             if not isinstance(id, int): raise TypeError("Invalid ID parameter")
 
-            self.db.delete_template(id)
+            self.db.delete_person(id)
             return {"status": "success"}
         except Exception:
             return {}
+        
+
+
+    async def rule_get(self, **kwargs) -> dict:
+        try:
+            # get ID
+            id:int|None = kwargs.get("id", None)
+            if not isinstance(id, (int, type(None))): raise TypeError("Invalid ID parameter")
+
+            # get LIMIT
+            limit:int|None = kwargs.get("limit", None)
+            if not isinstance(limit, (int, type(None))): raise TypeError("Invalid LIMIT parameter")
+
+            # get OFFSET
+            offset:int|None = kwargs.get("offset", None)
+            if not isinstance(offset, (int, type(None))): raise TypeError("Invalid OFFSET parameter")
+
+            # Fetch a single template or multiple templates
+            results:list[SendMessageRule] = []
+            if id is not None:
+                res = self.db.get_rule(id)
+                if res is not None:
+                    results.append(res)
+            else:
+                results = self.db.get_rules(limit, offset)
+
+            return {
+                "results": list(map(
+                    lambda x: {
+                        "id": x.id,
+                        "recipients": x.recipients,
+                        "template": x.template,
+                        "start_date": x._start_date,
+                        "end_date": x._end_date,
+                        "interval": x._interval,
+                        "last_executed": x._last_executed
+                    },
+                    results))
+            }
+        except Exception:
+            return {}
+
+    async def rule_remove(self, **kwargs) -> dict:
+        try:
+            id:int = kwargs["id"]
+            if not isinstance(id, int): raise TypeError("Invalid ID parameter")
+
+            self.db.delete_rule(id)
+            return {"status": "success"}
+        except Exception:
+            return {}
+
 
 
 
