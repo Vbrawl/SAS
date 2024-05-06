@@ -37,8 +37,6 @@ class SendMessageRule:
             raise ValueError(f"{self.__class__.__qualname__}: Constraint last_executed({last_executed}) <= end_date({end_date}): Failed")
         # last_executed is valid
 
-        if len(recipients) == 0:
-            raise ValueError(f"{self.__class__.__qualname__}: Constraint len(recipients) > 0: Failed")
 
         self._start_date = start_date
         self._end_date = end_date
