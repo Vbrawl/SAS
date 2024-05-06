@@ -177,10 +177,28 @@ class Database:
         res:list[tuple[int, str]] = cur.fetchall()
         return list(map(lambda x: Template(id=x[0], message=x[1]), res))
     
-    def add_template(self, template:Template):
+    def add_template(self, template:Template) -> int|None:
         message = template._message
         self.conn.execute("INSERT INTO `Templates` (`message`) VALUES (?)", (message,))
+        cur = self.conn.execute("SELECT last_insert_rowid();")
+        res = cur.fetchone()
         self.conn.commit()
+
+        if res is not None:
+            return res[0]
+        
+    def ensure_template(self, template:Template) -> int|None:
+        exists = True
+        id = template.id
+
+        if id is None:
+            exists = False
+        elif self.get_template(id) is None:
+            exists = False
+        
+        if not exists:
+            return self.add_template(template)
+        return id
     
     def alter_template(self, template:Template, id:int|None = None):
         if id is None:
@@ -255,6 +273,9 @@ class Database:
             rid = self.ensure_person(recipient)
             if rid: recipient.id = rid
             else: delattr(recipient, "id")
+
         # TODO: If the template doesn't exist add it to the database
+        template.id = self.ensure_template(template)
+
         # TODO: Insert all info to the database
         # TODO: Mark all people in the recipients list as recipients of the rule
