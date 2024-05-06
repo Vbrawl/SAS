@@ -118,16 +118,21 @@ class Database:
             return list(map(lambda x: PersonTemplateArguments(id=x[0], first_name=x[1], last_name=x[2], telephone=x[3], address=x[4]), res))
         return []
     
-    def add_person(self, person:PersonTemplateArguments):
+    def add_person(self, person:PersonTemplateArguments) -> int|None:
         telephone:str = person.telephone
         first_name:str|None = getattr(person, "first_name", None)
         last_name:str|None = getattr(person, "last_name", None)
         address:str|None = getattr(person, "address", None)
 
         self.conn.execute("INSERT INTO `People` (first_name, last_name, telephone, address) VALUES (?, ?, ?, ?);", (first_name, last_name, telephone, address))
+        cur = self.conn.execute("SELECT last_insert_rowid();")
+        res = cur.fetchone()
         self.conn.commit()
+
+        if res is not None:
+            return res[0]
     
-    def ensure_person(self, person:PersonTemplateArguments):
+    def ensure_person(self, person:PersonTemplateArguments) -> int|None:
         exists = True
         id = getattr(person, "id", None)
 
@@ -137,7 +142,8 @@ class Database:
             exists = False
         
         if not exists:
-            self.add_person(person)
+            return self.add_person(person)
+        return id
     
     def alter_person(self, person:PersonTemplateArguments, id:int|None = None):
         if id is None:
@@ -245,6 +251,10 @@ class Database:
         last_executed = rule._last_executed
 
         # TODO: Add all people that don't exist to the database
+        for recipient in recipients:
+            rid = self.ensure_person(recipient)
+            if rid: recipient.id = rid
+            else: delattr(recipient, "id")
         # TODO: If the template doesn't exist add it to the database
         # TODO: Insert all info to the database
         # TODO: Mark all people in the recipients list as recipients of the rule
