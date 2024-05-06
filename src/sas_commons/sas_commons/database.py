@@ -127,6 +127,18 @@ class Database:
         self.conn.execute("INSERT INTO `People` (first_name, last_name, telephone, address) VALUES (?, ?, ?, ?);", (first_name, last_name, telephone, address))
         self.conn.commit()
     
+    def ensure_person(self, person:PersonTemplateArguments):
+        exists = True
+        id = getattr(person, "id", None)
+
+        if id is None:
+            exists = False
+        elif self.get_person(id) is None:
+            exists = False
+        
+        if not exists:
+            self.add_person(person)
+    
     def alter_person(self, person:PersonTemplateArguments, id:int|None = None):
         if id is None:
             id = getattr(person, "id", None)
