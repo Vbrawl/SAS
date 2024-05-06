@@ -115,6 +115,22 @@ class Database:
             return list(map(lambda x: PersonTemplateArguments(id=x[0], first_name=x[1], last_name=x[2], telephone=x[3], address=x[4]), res))
         return []
     
+    def link_recipient(self, personId:int, ruleId:int):
+        self.conn.execute("INSERT INTO `PeopleInRule` (`personID`, `ruleID`) VALUES (?, ?);", (personId, ruleId))
+        self.conn.commit()
+    
+    def unlink_recipient(self, personId:int, ruleId:int):
+        self.conn.execute("DELETE FROM `PeopleInRule` WHERE `personID`=? AND `ruleID`=?;", (personId, ruleId))
+        self.conn.commit()
+    
+    def unlink_recipient_from_all_rules(self, personId:int):
+        self.conn.execute("DELETE FROM `PeopleInRule` WHERE `personID`=?;", (personId,))
+        self.conn.commit()
+    
+    def unlink_all_recipients_from_rule(self, ruleId:int):
+        self.conn.execute("DELETE FROM `PeopleInRule` WHERE `ruleID`=?;", (ruleId,))
+        self.conn.commit()
+    
     def add_person(self, person:PersonTemplateArguments) -> int|None:
         telephone:str = person.telephone
         first_name:str|None = getattr(person, "first_name", None)
