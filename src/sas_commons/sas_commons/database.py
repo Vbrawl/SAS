@@ -276,6 +276,7 @@ class Database:
 
         # TODO: If the template doesn't exist add it to the database
         template.id = self.ensure_template(template)
-
+        if template.id is None:
+            raise sqlite3.Error("Template existance could not be verified.")
         # TODO: Insert all info to the database
         # TODO: Mark all people in the recipients list as recipients of the rule
