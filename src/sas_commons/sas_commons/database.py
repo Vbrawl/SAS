@@ -111,6 +111,13 @@ class Database:
             address=x[4]
             ), res))
     
+    def get_recipients(self, ruleId:int) -> list[PersonTemplateArguments]:
+        cur = self.conn.execute("SELECT `P`.`id`, `P`.`first_name`, `P`.`last_name`, `P`.`telephone`, `P`.`address` FROM `PeopleInRule` as `PIR` JOIN `People` AS `P` ON `PIR`.`personID` = `P`.`id` WHERE `PIR`.`ruleID`=?;", (ruleId,))
+        res:list[tuple[int, str|None, str|None, str, str|None]] = cur.fetchall()
+        if res:
+            return list(map(lambda x: PersonTemplateArguments(id=x[0], first_name=x[1], last_name=x[2], telephone=x[3], address=x[4]), res))
+        return []
+    
     def add_person(self, person:PersonTemplateArguments):
         telephone:str = person.telephone
         first_name:str|None = getattr(person, "first_name", None)
@@ -168,34 +175,25 @@ class Database:
         self.conn.commit()
     
     def get_rule(self, id:int) -> SendMessageRule|None:
-        def asInt(x:int|None) -> int:
-            return x if x is not None else 0
-
         cur = self.conn.execute("SELECT T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval_weeks`, SMR.`interval_days`, SMR.`interval_hours`, SMR.`interval_minutes`, SMR.`interval_seconds`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id WHERE SMR.id=?;", (id,))
         res:tuple[int, str, datetime, datetime|None, int|None, int|None, int|None, int|None, int|None, datetime|None]|None = cur.fetchone()
         if res:
-            cur = cur.execute("SELECT `P`.`id`, `P`.`first_name`, `P`.`last_name`, `P`.`telephone`, `P`.`address` FROM `PeopleInRule` as `PIR` JOIN `People` AS `P` ON `PIR`.`personID` = `P`.`id` WHERE `PIR`.`ruleID`=?;", (id,))
-            recipients:list[tuple[int, str, str, str, str]] = cur.fetchall()
-
             return SendMessageRule(
-                list(map(lambda x: PersonTemplateArguments(id=x[0], first_name=x[1], last_name=x[2], telephone=x[3], address=x[4]), recipients)),
+                self.get_recipients(id), # type: ignore
                 Template(id=res[0], message=res[1]),
                 res[2],
                 res[3],
-                timedelta(weeks=asInt(res[4]), days=asInt(res[5]), hours=asInt(res[6]), minutes=asInt(res[7]), seconds=asInt(res[8])),
+                timedelta(
+                    weeks=res[4] if res[4] else 0,
+                    days=res[5] if res[5] else 0,
+                    hours=res[6] if res[6] else 0,
+                    minutes=res[7] if res[7] else 0,
+                    seconds=res[8] if res[8] else 0),
                 res[9],
                 id=id
             )
     
     def get_rules(self, limit:int|None = None, offset:int|None = None) -> list[SendMessageRule]:
-        def fetchRecipients(id:int) -> list[PersonTemplateArguments]:
-            cur = self.conn.execute("SELECT `P`.`id`, `P`.`first_name`, `P`.`last_name`, `P`.`telephone`, `P`.`address` FROM `PeopleInRule` as `PIR` JOIN `People` AS `P` ON `PIR`.`personID` = `P`.`id` WHERE `PIR`.`ruleID`=?;", (id,))
-            res:list[tuple[int, str|None, str|None, str, str|None]] = cur.fetchall()
-            if res:
-                return list(map(lambda x: PersonTemplateArguments(id=x[0], first_name=x[1], last_name=x[2], telephone=x[3], address=x[4]), res))
-            return []
-        def asInt(x:int|None) -> int:
-            return x if x is not None else 0
         query:str = "SELECT SMR.`id`, T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval_weeks`, SMR.`interval_days`, SMR.`interval_hours`, SMR.`interval_minutes`, SMR.`interval_seconds`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id"
         params:tuple = tuple()
 
@@ -212,11 +210,16 @@ class Database:
             return list(map(lambda x:
                             SendMessageRule(
                                 id=x[0],
-                                recipients=fetchRecipients(x[0]), # type: ignore
+                                recipients=self.get_recipients(x[0]), # type: ignore
                                 template=Template(id=x[1], message=x[2]),
                                 start_date=x[3],
                                 end_date=x[4],
-                                interval=timedelta(weeks=asInt(x[5]), days=asInt(x[6]), hours=asInt(x[7]), minutes=asInt(x[8]), seconds=asInt(x[9])),
+                                interval=timedelta(
+                                    weeks=x[5] if x[5] else 0,
+                                    days=x[6] if x[6] else 0,
+                                    hours=x[7] if x[7] else 0,
+                                    minutes=x[8] if x[8] else 0,
+                                    seconds=x[9] if x[9] else 0),
                                 last_executed=x[10]
                             ), res))
         return []
