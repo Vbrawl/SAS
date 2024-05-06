@@ -73,10 +73,7 @@ class Database:
                           `templateID` INTEGER NOT NULL,
                           `start_date` DATETIME NOT NULL,
                           `end_date` DATETIME,
-                          `interval_weeks` INTEGER,
                           `interval_days` INTEGER,
-                          `interval_hours` INTEGER,
-                          `interval_minutes` INTEGER,
                           `interval_seconds` INTEGER,
                           `last_executed` DATETIME,
                           PRIMARY KEY(`id`),
@@ -211,8 +208,8 @@ class Database:
         self.conn.commit()
     
     def get_rule(self, id:int) -> SendMessageRule|None:
-        cur = self.conn.execute("SELECT T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval_weeks`, SMR.`interval_days`, SMR.`interval_hours`, SMR.`interval_minutes`, SMR.`interval_seconds`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id WHERE SMR.id=?;", (id,))
-        res:tuple[int, str, datetime, datetime|None, int|None, int|None, int|None, int|None, int|None, datetime|None]|None = cur.fetchone()
+        cur = self.conn.execute("SELECT T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval_days`, SMR.`interval_seconds`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id WHERE SMR.id=?;", (id,))
+        res:tuple[int, str, datetime, datetime|None, int|None, int|None, datetime|None]|None = cur.fetchone()
         if res:
             return SendMessageRule(
                 self.get_recipients(id),
@@ -220,17 +217,14 @@ class Database:
                 res[2],
                 res[3],
                 timedelta(
-                    weeks=res[4] if res[4] else 0,
-                    days=res[5] if res[5] else 0,
-                    hours=res[6] if res[6] else 0,
-                    minutes=res[7] if res[7] else 0,
-                    seconds=res[8] if res[8] else 0),
-                res[9],
+                    days=res[4] if res[4] else 0,
+                    seconds=res[5] if res[5] else 0),
+                res[6],
                 id=id
             )
     
     def get_rules(self, limit:int|None = None, offset:int|None = None) -> list[SendMessageRule]:
-        query:str = "SELECT SMR.`id`, T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval_weeks`, SMR.`interval_days`, SMR.`interval_hours`, SMR.`interval_minutes`, SMR.`interval_seconds`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id"
+        query:str = "SELECT SMR.`id`, T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval_days`, SMR.`interval_seconds`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id"
         params:tuple = tuple()
 
         if limit is not None:
@@ -241,7 +235,7 @@ class Database:
                 params = (limit, offset)
 
         cur = self.conn.execute(query, params)
-        res:list[tuple[int, int, str, datetime, datetime|None, int|None, int|None, int|None, int|None, int|None, datetime|None]] = cur.fetchall()
+        res:list[tuple[int, int, str, datetime, datetime|None, int|None, int|None, datetime|None]] = cur.fetchall()
         if res:
             return list(map(lambda x:
                             SendMessageRule(
@@ -251,12 +245,9 @@ class Database:
                                 start_date=x[3],
                                 end_date=x[4],
                                 interval=timedelta(
-                                    weeks=x[5] if x[5] else 0,
-                                    days=x[6] if x[6] else 0,
-                                    hours=x[7] if x[7] else 0,
-                                    minutes=x[8] if x[8] else 0,
-                                    seconds=x[9] if x[9] else 0),
-                                last_executed=x[10]
+                                    days=x[5] if x[5] else 0,
+                                    seconds=x[6] if x[6] else 0),
+                                last_executed=x[7]
                             ), res))
         return []
     
@@ -278,5 +269,9 @@ class Database:
         template.id = self.ensure_template(template)
         if template.id is None:
             raise sqlite3.Error("Template existance could not be verified.")
+
         # TODO: Insert all info to the database
+        self.conn.execute('INSERT INTO `SendMessageRule` (`templateID`, `start_date`, `end_date`, `interval_days`, `interval_seconds`, `last_executed`) VALUES (?, ?, ?, ?, ?, ?)',
+                          (template.id, start_date, end_date, interval.days, interval.seconds, last_executed))
         # TODO: Mark all people in the recipients list as recipients of the rule
+        self.conn.commit()
