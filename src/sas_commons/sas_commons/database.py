@@ -267,7 +267,7 @@ class Database:
                             ), res))
         return []
     
-    def add_rule(self, rule:SendMessageRule):
+    def add_rule(self, rule:SendMessageRule) -> int|None:
         recipients = rule.recipients
         template = rule.template
         start_date = rule._start_date
@@ -299,6 +299,7 @@ class Database:
                 self.link_recipient(recipient.id, rule.id)
 
         self.conn.commit()
+        return rule.id
     
     def alter_rule(self, rule:SendMessageRule, id:int|None = None):
         if id is None:
