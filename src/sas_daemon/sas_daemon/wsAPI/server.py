@@ -48,8 +48,8 @@ class WSAPI:
             },
             "rule": {
                 "get": self.rule_get,
-                "add": self.rule_add,
-                "alter": self.rule_alter,
+                "add": ...,
+                "alter": ...,
                 "remove": self.rule_remove
             },
             "people_in_rule": {
@@ -81,7 +81,45 @@ class WSAPI:
             except Exception as err:
                 print(err)
                 continue
+    
 
+    def parse_as_template(self, kwargs:dict[str, Any], id_required:bool = False) -> Template:
+        id = kwargs.get("id", None)
+        if id_required and id is None:
+            raise TypeError("ID Required for object creation but is not present in the data")
+        elif not isinstance(id, (int, type(None))):
+            raise TypeError("Invalid ID parameter")
+        message = kwargs["message"]
+        if not isinstance(message, str):
+            raise TypeError("Invalid MESSAGE parameter")
+        return Template(id=id, message=message)
+    
+    def parse_as_person(self, kwargs:dict[str, Any], id_required:bool = False) -> PersonTemplateArguments:
+        id = kwargs.get("id", None)
+        if id_required and id is None:
+            raise RuntimeError("ID Required for object creation but is not present in the data")
+        elif not isinstance(id, (int, type(None))):
+            raise RuntimeError("Invalid ID parameter")
+
+        first_name:str|None = kwargs.get("first_name", None)
+        if not isinstance(first_name, (str, type(None))): raise TypeError("Invalid FIRST_NAME parameter")
+
+        last_name:str|None = kwargs.get("last_name", None)
+        if not isinstance(last_name, (str, type(None))): raise TypeError("Invalid LAST_NAME parameter")
+
+        telephone:str = kwargs["telephone"]
+        if not isinstance(telephone, str): raise TypeError("Invalid TELEPHONE parameter")
+
+        address:str|None = kwargs.get("address", None)
+        if not isinstance(address, (str, type(None))): raise TypeError("Invalid ADDRESS parameter")
+
+        return PersonTemplateArguments(
+            id=id,
+            first_name=first_name,
+            last_name=last_name,
+            telephone=telephone,
+            address=address
+        )
     
     async def template_get(self, **kwargs) -> dict:
         try:
@@ -119,11 +157,7 @@ class WSAPI:
     
     async def template_add(self, **kwargs) -> dict:
         try:
-            message:str = kwargs["message"]
-            if not isinstance(message, str): raise TypeError("Invalid MESSAGE parameter")
-
-
-            template = Template(message)
+            template = self.parse_as_template(kwargs)
             id = self.db.add_template(template)
 
             if id is None:
@@ -135,14 +169,8 @@ class WSAPI:
     
     async def template_alter(self, **kwargs) -> dict:
         try:
-            id:int = kwargs["id"]
-            if not isinstance(id, int): raise TypeError("Invalid ID parameter")
-
-            message:str = kwargs["message"]
-            if not isinstance(message, str): raise TypeError("Invalid MESSAGE parameter")
-
-            template = Template(message)
-            self.db.alter_template(template, id)
+            template = self.parse_as_template(kwargs, True)
+            self.db.alter_template(template)
 
             return {"status": "success"}
         except Exception:
@@ -198,24 +226,7 @@ class WSAPI:
 
     async def people_add(self, **kwargs) -> dict:
         try:
-            first_name:str|None = kwargs.get("first_name", None)
-            if not isinstance(first_name, (str, type(None))): raise TypeError("Invalid FIRST_NAME parameter")
-
-            last_name:str|None = kwargs.get("last_name", None)
-            if not isinstance(last_name, (str, type(None))): raise TypeError("Invalid LAST_NAME parameter")
-
-            telephone:str = kwargs["telephone"]
-            if not isinstance(telephone, str): raise TypeError("Invalid TELEPHONE parameter")
-
-            address:str|None = kwargs.get("address", None)
-            if not isinstance(address, (str, type(None))): raise TypeError("Invalid ADDRESS parameter")
-
-            person = PersonTemplateArguments(
-                id=id,
-                first_name=first_name,
-                last_name=last_name,
-                telephone=telephone,
-                address=address)
+            person = self.parse_as_person(kwargs)
             id = self.db.add_person(person)
 
             return {"id": id}
@@ -224,22 +235,7 @@ class WSAPI:
 
     async def people_alter(self, **kwargs) -> dict:
         try:
-            id:int|None = kwargs.get("id", None)
-            if not isinstance(id, (int, type(None))): raise TypeError("Invalid ID parameter")
-
-            first_name:str|None = kwargs.get("first_name", None)
-            if not isinstance(first_name, (str, type(None))): raise TypeError("Invalid FIRST_NAME parameter")
-
-            last_name:str|None = kwargs.get("last_name", None)
-            if not isinstance(last_name, (str, type(None))): raise TypeError("Invalid LAST_NAME parameter")
-
-            telephone:str = kwargs["telephone"]
-            if not isinstance(telephone, str): raise TypeError("Invalid TELEPHONE parameter")
-
-            address:str|None = kwargs.get("address", None)
-            if not isinstance(address, (str, type(None))): raise TypeError("Invalid ADDRESS parameter")
-
-            person = PersonTemplateArguments(first_name=first_name, last_name=last_name, telephone=telephone, address=address)
+            person = self.parse_as_person(kwargs, True)
             self.db.alter_person(person=person)
             
             return {"status": "success"}
