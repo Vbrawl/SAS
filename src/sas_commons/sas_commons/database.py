@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from .templates import PersonTemplateArguments, Template
+from .templates import PersonTemplateArguments, TemplateArguments, Template
 from .rules import SendMessageRule
 from datetime import datetime, timedelta
 import sqlite3
@@ -186,3 +186,37 @@ class Database:
                 res[9],
                 id=id
             )
+    
+    def get_rules(self, limit:int|None = None, offset:int|None = None) -> list[SendMessageRule]:
+        def fetchRecipients(id:int) -> list[PersonTemplateArguments]:
+            cur = self.conn.execute("SELECT `P`.`id`, `P`.`first_name`, `P`.`last_name`, `P`.`telephone`, `P`.`address` FROM `PeopleInRule` as `PIR` JOIN `People` AS `P` ON `PIR`.`personID` = `P`.`id` WHERE `PIR`.`ruleID`=?;", (id,))
+            res:list[tuple[int, str|None, str|None, str, str|None]] = cur.fetchall()
+            if res:
+                return list(map(lambda x: PersonTemplateArguments(id=x[0], first_name=x[1], last_name=x[2], telephone=x[3], address=x[4]), res))
+            return []
+        def asInt(x:int|None) -> int:
+            return x if x is not None else 0
+        query:str = "SELECT SMR.`id`, T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval_weeks`, SMR.`interval_days`, SMR.`interval_hours`, SMR.`interval_minutes`, SMR.`interval_seconds`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id"
+        params:tuple = tuple()
+
+        if limit is not None:
+            query += " LIMIT ?"
+            params = (limit,)
+            if offset is not None:
+                query += " OFFSET ?"
+                params = (limit, offset)
+
+        cur = self.conn.execute(query, params)
+        res:list[tuple[int, int, str, datetime, datetime|None, int|None, int|None, int|None, int|None, int|None, datetime|None]] = cur.fetchall()
+        if res:
+            return list(map(lambda x:
+                            SendMessageRule(
+                                id=x[0],
+                                recipients=fetchRecipients(x[0]), # type: ignore
+                                template=Template(id=x[1], message=x[2]),
+                                start_date=x[3],
+                                end_date=x[4],
+                                interval=timedelta(weeks=asInt(x[5]), days=asInt(x[6]), hours=asInt(x[7]), minutes=asInt(x[8]), seconds=asInt(x[9])),
+                                last_executed=x[10]
+                            ), res))
+        return []
