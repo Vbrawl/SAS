@@ -49,8 +49,8 @@ class WSAPI:
             },
             "rule": {
                 "get": self.rule_get,
-                "add": ...,
-                "alter": ...,
+                "add": self.rule_add,
+                "alter": self.rule_alter,
                 "remove": self.rule_remove
             },
             "people_in_rule": {
@@ -337,6 +337,24 @@ class WSAPI:
                     },
                     results))
             }
+        except Exception:
+            return {}
+    
+    async def rule_add(self, **kwargs) -> dict:
+        try:
+            rule = self.parse_as_rule(kwargs)
+            id = self.db.add_rule(rule)
+
+            return {"id": id}
+        except Exception:
+            return {}
+    
+    async def rule_alter(self, **kwargs) -> dict:
+        try:
+            rule = self.parse_as_rule(kwargs, True)
+            self.db.alter_rule(rule)
+            
+            return {"status": "success"}
         except Exception:
             return {}
 
