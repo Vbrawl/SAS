@@ -233,17 +233,17 @@ class Database:
     
     def get_rule(self, id:int) -> SendMessageRule|None:
         cur = self.conn.execute("SELECT T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval_days`, SMR.`interval_seconds`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id WHERE SMR.id=?;", (id,))
-        res:tuple[int, str, datetime, datetime|None, int|None, int|None, datetime|None]|None = cur.fetchone()
+        res:tuple[int, str, str, str|None, int|None, int|None, str|None]|None = cur.fetchone()
         if res:
             return SendMessageRule(
                 self.get_recipients(id),
                 Template(id=res[0], message=res[1]),
-                res[2],
-                res[3],
+                datetime.strptime(res[2], "%Y-%m-%d %H:%M:%S.%f"),
+                datetime.strptime(res[3], "%Y-%m-%d %H:%M:%S.%f") if res[3] else None,
                 timedelta(
                     days=res[4] if res[4] else 0,
                     seconds=res[5] if res[5] else 0),
-                res[6],
+                datetime.strptime(res[6], "%Y-%m-%d %H:%M:%S.%f") if res[6] else None,
                 id=id
             )
     
@@ -259,19 +259,19 @@ class Database:
                 params = (limit, offset)
 
         cur = self.conn.execute(query, params)
-        res:list[tuple[int, int, str, datetime, datetime|None, int|None, int|None, datetime|None]] = cur.fetchall()
+        res:list[tuple[int, int, str, str, str|None, int|None, int|None, str|None]] = cur.fetchall()
         if res:
             return list(map(lambda x:
                             SendMessageRule(
                                 id=x[0],
                                 recipients=self.get_recipients(x[0]),
                                 template=Template(id=x[1], message=x[2]),
-                                start_date=x[3],
-                                end_date=x[4],
+                                start_date=datetime.strptime(x[3], "%Y-%m-%d %H:%M:%S.%f"),
+                                end_date=datetime.strptime(x[4], "%Y-%m-%d %H:%M:%S.%f") if x[4] else None,
                                 interval=timedelta(
                                     days=x[5] if x[5] else 0,
                                     seconds=x[6] if x[6] else 0),
-                                last_executed=x[7]
+                                last_executed=datetime.strptime(x[7], "%Y-%m-%d %H:%M:%S.%f") if x[7] else None
                             ), res))
         return []
     
@@ -291,7 +291,7 @@ class Database:
 
         # Insert all info to the database
         self.conn.execute('INSERT INTO `SendMessageRule` (`templateID`, `start_date`, `end_date`, `interval_days`, `interval_seconds`, `last_executed`) VALUES (?, ?, ?, ?, ?, ?)',
-                          (template.id, start_date, end_date, interval.days, interval.seconds, last_executed))
+                          (template.id, start_date.strftime("%Y-%m-%d %H:%M:%S.%f"), end_date.strftime("%Y-%m-%d %H:%M:%S.%f") if end_date else None, interval.days, interval.seconds, last_executed.strftime("%Y-%m-%d %H:%M:%S.%f") if last_executed else None))
         cur = self.conn.execute("SELECT last_insert_rowid();")
         res = cur.fetchone()
         if res is None:
@@ -329,7 +329,7 @@ class Database:
 
         # Update rule
         self.conn.execute("UPDATE `SendMessageRule` SET `templateID`=?, `start_date`=?, `end_date`=?, `interval_days`=?, `interval_seconds`=?, `last_executed`=? WHERE `id`=?;",
-                          (template.id, start_date, end_date, interval.days, interval.seconds, last_executed, id))
+                          (template.id, start_date.strftime("%Y-%m-%d %H:%M:%S.%f"), end_date.strftime("%Y-%m-%d %H:%M:%S.%f") if end_date else None, interval.days, interval.seconds, last_executed.strftime("%Y-%m-%d %H:%M:%S.%f") if last_executed else None, id))
 
         # Link all new recipients
         for recipient in recipients:
