@@ -16,26 +16,10 @@ limitations under the License.
 This file (main.py) is the main starting point of the "Daemon" component
 of the project (SAS).
 '''
-from sas_commons import SendMessageRule, TemplateArguments, Template
-from datetime import datetime, timedelta
+from daemon import Daemon
 import asyncio
 
 
-async def main():
-    async def cback(ta:TemplateArguments, msg:str):
-        print(msg)
 
-    rules = [
-        SendMessageRule(0, [TemplateArguments(name="Bruce")], Template("Hello $(name)!"), datetime.now(), end_date=datetime.now()+timedelta(seconds=20), interval=timedelta(seconds=5)),
-        SendMessageRule(0, [TemplateArguments(name="John")], Template("Hello $(name)!"), datetime.now(), interval=timedelta(seconds=7)),
-        SendMessageRule(0, [TemplateArguments(name="Nick")], Template("Hello $(name)!"), datetime.now(), interval=timedelta(seconds=3))
-    ]
-
-    oper = []
-    for rule in rules:
-        oper.append(asyncio.create_task(rule.infschedule(cback)))
-    
-    await asyncio.wait(oper)
-
-
-asyncio.run(main())
+asyncio.run(Daemon().start())
+# asyncio.run(db_test())
