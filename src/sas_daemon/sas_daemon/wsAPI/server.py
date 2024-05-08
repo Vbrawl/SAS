@@ -62,10 +62,6 @@ class WSAPI:
             "add": WSAPI.rule_add,
             "alter": WSAPI.rule_alter,
             "remove": WSAPI.rule_remove
-        },
-        "people_in_rule": {
-            "link": WSAPI.people_in_rule_link,
-            "unlink": WSAPI.people_in_rule_unlink
         }
     }
     
@@ -293,41 +289,6 @@ class WSAPI:
             if not isinstance(id, int): raise TypeError("Invalid ID parameter")
 
             self.db.delete_rule(id)
-            return {"status": "success"}
-        except Exception:
-            return {}
-
-    async def people_in_rule_link(self, **kwargs) -> dict:
-        try:
-            # get PersonID
-            personId:int|None = kwargs["personId"]
-            if not isinstance(personId, int): raise TypeError("Invalid PERSONID parameter")
-            
-            # get RuleID
-            ruleId:int = kwargs["ruleId"]
-            if not isinstance(ruleId, int): raise TypeError("Invalid RULEID parameter")
-
-            # Link
-            self.db.link_recipient(personId, ruleId)
-            return {"status": "success"}
-        except Exception:
-            return {}
-    
-    async def people_in_rule_unlink(self, **kwargs) -> dict:
-        try:
-            # get PersonID
-            personId:int|None = kwargs.get("personId", None)
-            if not isinstance(personId, (int, type(None))): raise TypeError("Invalid PERSONID parameter")
-            
-            # get RuleID
-            ruleId:int = kwargs["ruleId"]
-            if not isinstance(ruleId, int): raise TypeError("Invalid RULEID parameter")
-
-            # Link
-            if personId is None:
-                self.db.unlink_all_recipients_from_rule(ruleId)
-            else:
-                self.db.unlink_recipient(personId, ruleId)
             return {"status": "success"}
         except Exception:
             return {}
