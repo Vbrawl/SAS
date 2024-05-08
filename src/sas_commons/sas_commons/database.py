@@ -339,5 +339,6 @@ class Database:
                 self.link_recipient(recipient.id, id)
     
     def delete_rule(self, id:int):
+        self.unlink_all_recipients_from_rule(id)
         self.conn.execute("DELETE FROM `SendMessageRule` WHERE `id`=?;", (id,))
         self.conn.commit()
