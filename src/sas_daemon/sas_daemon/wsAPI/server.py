@@ -17,9 +17,7 @@ from typing import Callable, Coroutine, Any
 from sas_commons import Database, Template, PersonTemplateArguments, SendMessageRule
 from . import parsers
 import json
-import asyncio
 import websockets
-import math
 
 
 
@@ -292,15 +290,3 @@ class WSAPI:
             return {"status": "success"}
         except Exception:
             return {}
-
-
-
-
-
-
-if __name__ == "__main__":
-    async def main():
-        wsapi = WSAPI(Database("../temp.db"))
-        await wsapi.start_server()
-        await asyncio.sleep(math.inf)
-    asyncio.run(main())
