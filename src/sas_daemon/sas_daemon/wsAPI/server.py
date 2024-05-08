@@ -29,6 +29,30 @@ class WSAPI:
         self.db = db
         self.host = host
         self.port = port
+        self.OPTIONS:dict[str, dict|Callable] = {
+        "template": {
+            "get": WSAPI.template_get,
+            "add": WSAPI.template_add,
+            "alter": WSAPI.template_alter,
+            "remove": WSAPI.template_remove
+        },
+        "people": {
+            "get": WSAPI.people_get,
+            "add": WSAPI.people_add,
+            "alter": WSAPI.people_alter,
+            "remove": WSAPI.people_remove
+        },
+        "rule": {
+            "get": WSAPI.rule_get,
+            "add": WSAPI.rule_add,
+            "alter": WSAPI.rule_alter,
+            "remove": WSAPI.rule_remove
+        },
+        "people_in_rule": {
+            "link": WSAPI.people_in_rule_link,
+            "unlink": WSAPI.people_in_rule_unlink
+        }
+    }
     
     async def start_server(self):
         await websockets.serve(ws_handler=self.handle, host=self.host, port=self.port)
@@ -292,32 +316,6 @@ class WSAPI:
             return {"status": "success"}
         except Exception:
             return {}
-    
-
-    OPTIONS:dict[str, dict|Callable] = {
-        "template": {
-            "get": template_get,
-            "add": template_add,
-            "alter": template_alter,
-            "remove": template_remove
-        },
-        "people": {
-            "get": people_get,
-            "add": people_add,
-            "alter": people_alter,
-            "remove": people_remove
-        },
-        "rule": {
-            "get": rule_get,
-            "add": rule_add,
-            "alter": rule_alter,
-            "remove": rule_remove
-        },
-        "people_in_rule": {
-            "link": people_in_rule_link,
-            "unlink": people_in_rule_unlink
-        }
-    }
 
 
 
