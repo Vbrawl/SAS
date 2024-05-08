@@ -17,6 +17,7 @@ This file (SendMessageRule.py) contains a class (SendMessageRule) which holds in
 dates and other info necessary for sending messages at certain intervals/dates. This file
 is part of the "SAS-Commons" module of the "SAS" project.
 '''
+from __future__ import annotations
 from typing import Callable, Coroutine
 from datetime import datetime, timedelta
 from ..templates import Template, PersonTemplateArguments
@@ -82,24 +83,17 @@ class SendMessageRule:
     def report_executed(self):
         self._last_executed = datetime.now()
 
-    async def schedule(self, callback:Callable[[PersonTemplateArguments, str], Coroutine]):
+    async def schedule(self, callback:Callable[[SendMessageRule], Coroutine]):
         # Wait until execution
         ne = self.next_execution
         if ne and ne != timedelta(0): await asyncio.sleep(ne.total_seconds())
 
-        # Prepare callback calls
-        send_op:list[asyncio.Task] = []
-        for recipient in self.recipients:
-            msg = self.template.compileFor(recipient)
-            send_op.append(
-                asyncio.create_task(callback(recipient, msg)))
-        
-        # Execute callback send operations
-        await asyncio.wait(send_op)
+        # Prepare callback call
+        await asyncio.create_task(callback(self))
 
         # update execution time
         self.report_executed()
 
-    async def infschedule(self, callback:Callable[[PersonTemplateArguments, str], Coroutine]):
+    async def infschedule(self, callback:Callable[[SendMessageRule], Coroutine]):
         while self.next_execution_date is not None:
             await self.schedule(callback)
