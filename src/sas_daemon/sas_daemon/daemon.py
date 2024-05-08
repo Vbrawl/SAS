@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sas_commons import Database, SendMessageRule
+import Constants
 from wsAPI.server import WSAPI
 import asyncio
 
@@ -21,13 +22,13 @@ import asyncio
 
 class Daemon:
     def __init__(self):
-        self.collect_rules_interval = 60
+        self.collect_rules_interval = Constants.COLLECT_RULES_INTERVAL
 
-        self.db = Database("temp.db")
+        self.db = Database(Constants.DATABASE_FILE)
         self.operations:dict[int, asyncio.Task] = {}
         self.op_lock = asyncio.Lock()
 
-        self.wsapi = WSAPI(self.db)
+        self.wsapi = WSAPI(self.db, Constants.API_ADDRESS, Constants.API_PORT)
         # Update when a rule is updated, their attributes are automatically updated before sending.
         self.wsapi.OPTIONS["rule"]["add"] = self.rule_add_and_register # type: ignore
         self.wsapi.OPTIONS["rule"]["alter"] = self.rule_alter_and_register # type: ignore
