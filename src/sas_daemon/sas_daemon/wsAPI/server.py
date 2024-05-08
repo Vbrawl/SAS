@@ -34,37 +34,12 @@ class WSAPI:
         await websockets.serve(ws_handler=self.handle, host=self.host, port=self.port)
     
     def navigate_options(self, message_parts:list[str], kwargs:dict[str, Any]) -> Coroutine[Any, Any, dict]|None:
-        OPTIONS:dict[str, dict|Callable] = {
-            "template": {
-                "get": self.template_get,
-                "add": self.template_add,
-                "alter": self.template_alter,
-                "remove": self.template_remove
-            },
-            "people": {
-                "get": self.people_get,
-                "add": self.people_add,
-                "alter": self.people_alter,
-                "remove": self.people_remove
-            },
-            "rule": {
-                "get": self.rule_get,
-                "add": self.rule_add,
-                "alter": self.rule_alter,
-                "remove": self.rule_remove
-            },
-            "people_in_rule": {
-                "link": self.people_in_rule_link,
-                "unlink": self.people_in_rule_unlink
-            }
-        }
-
         # Navigate to the correct endpoint
-        nav:dict[str, dict|Callable]|Callable[[Any], Coroutine[Any, Any, dict]] = OPTIONS
+        nav:dict[str, dict|Callable]|Callable[[Any], Coroutine[Any, Any, dict]] = self.OPTIONS
         try:
             for part in message_parts:
                 nav = nav[part] # type: ignore
-            return nav(**kwargs) # type: ignore
+            return nav(self, **kwargs) # type: ignore
         except Exception:
             return None
 
@@ -401,6 +376,32 @@ class WSAPI:
             return {"status": "success"}
         except Exception:
             return {}
+    
+
+    OPTIONS:dict[str, dict|Callable] = {
+        "template": {
+            "get": template_get,
+            "add": template_add,
+            "alter": template_alter,
+            "remove": template_remove
+        },
+        "people": {
+            "get": people_get,
+            "add": people_add,
+            "alter": people_alter,
+            "remove": people_remove
+        },
+        "rule": {
+            "get": rule_get,
+            "add": rule_add,
+            "alter": rule_alter,
+            "remove": rule_remove
+        },
+        "people_in_rule": {
+            "link": people_in_rule_link,
+            "unlink": people_in_rule_unlink
+        }
+    }
 
 
 
