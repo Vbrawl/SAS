@@ -85,8 +85,9 @@ class WSAPI:
                 packet = json.loads(message)
                 print(packet)
                 task = self.navigate_options(packet["action"], packet["parameters"])
-                res = json.dumps(await task) # type: ignore
-                print(res)
+                res = await task # type: ignore
+                res["id"] = packet["id"]
+                res = json.dumps(res)
                 await ws.send(res)
             except Exception as err:
                 print(err)
