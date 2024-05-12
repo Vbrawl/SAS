@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from .templates import PersonTemplateArguments, TemplateArguments, Template
+from .templates import PersonTemplateArguments, Template
 from .rules import SendMessageRule
 from datetime import datetime, timedelta
 import sqlite3
