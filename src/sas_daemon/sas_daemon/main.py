@@ -16,7 +16,7 @@ limitations under the License.
 This file (main.py) is the main starting point of the "Daemon" component
 of the project (SAS).
 '''
-from daemon import Daemon
+from sas_daemon.daemon import Daemon
 import asyncio
 
 

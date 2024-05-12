@@ -13,9 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sas_commons import Database, SendMessageRule
-import Constants
-from wsAPI.server import WSAPI
+from .database import Database
+from .rules import SendMessageRule
+from . import Constants
+from .wsAPI.server import WSAPI
 import asyncio
 
 

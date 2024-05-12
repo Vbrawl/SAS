@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from typing import Any
-from sas_commons import Template, PersonTemplateArguments, SendMessageRule, Database
+from ..templates import Template, PersonTemplateArguments
+from ..rules import SendMessageRule
+from ..database import Database
 from datetime import datetime, timedelta
 
 

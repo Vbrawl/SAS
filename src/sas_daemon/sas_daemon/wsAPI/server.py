@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from typing import Callable, Coroutine, Any
-from sas_commons import Database, Template, PersonTemplateArguments, SendMessageRule
+from ..database import Database
+from ..templates import Template, PersonTemplateArguments
+from ..rules import SendMessageRule
 from . import parsers
 import json
 import websockets
