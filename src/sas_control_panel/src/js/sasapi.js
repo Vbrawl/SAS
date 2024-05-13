@@ -234,7 +234,7 @@
 
 
         async people_get(id = null, limit = null, offset = null) {
-            const data = this.send_and_wait({
+            const data = await this.send_and_wait({
                 action: ["people", "get"],
                 parameters: {
                     id: id,
