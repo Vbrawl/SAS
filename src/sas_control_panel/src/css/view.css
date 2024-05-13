@@ -116,3 +116,15 @@
 }
 
 .list-header .button-holder {justify-content: inherit;}
+
+
+
+/*****************
+* Action Buttons *
+*****************/
+.action-buttons {
+    width: 100%;
+    height: 5em;
+
+    margin-bottom: 2em;
+}

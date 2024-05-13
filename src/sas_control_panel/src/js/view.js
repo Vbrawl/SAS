@@ -188,8 +188,9 @@ function dom_rule_item(rule, is_header = false) {
     const checkbox = document.createElement('input');
     checkbox.classList.add("item-selector");
     checkbox.setAttribute("type", "checkbox");
-    if(is_header) checkbox.addEventListener("click", set_all_state);
-    else checkbox.addEventListener("click", set_header_state)
+    if(is_header) checkbox.addEventListener("change", set_all_state);
+    else checkbox.addEventListener("change", set_header_state);
+    checkbox.addEventListener("change", set_action_buttons_state);
     buttons.appendChild(checkbox);
 
     item.appendChild(recipient_count);
@@ -255,6 +256,37 @@ function set_header_state(evt) {
     }
 
     if(header_selector) header_selector.checked = all_checked;
+}
+
+
+function set_action_buttons_state(evt) {
+    const list = evt.currentTarget.parentElement.parentElement.parentElement;
+    const item_selectors = list.getElementsByClassName("item-selector");
+
+    var count = 0;
+    for (let i = 0; i < item_selectors.length; i++) {
+        const item = item_selectors[i];
+        
+        if(item.parentElement.parentElement.classList.contains("list-header"))
+            continue; // short circuit
+
+        if(item.checked) {
+            count += 1;
+            if(count > 1)
+                break; // short circuit
+        }
+    }
+
+    if(count == 0) {
+        document.getElementsByClassName("edit-button")[0].setAttribute("disabled", '');
+        document.getElementsByClassName("delete-button")[0].setAttribute("disabled", '');
+    }
+    else { // count > 0
+        document.getElementsByClassName("edit-button")[0].removeAttribute("disabled");
+        document.getElementsByClassName("delete-button")[0].removeAttribute("disabled");
+    }
+
+    return count;
 }
 
 
