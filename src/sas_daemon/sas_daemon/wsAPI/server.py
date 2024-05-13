@@ -254,12 +254,12 @@ class WSAPI:
                 "results": list(map(
                     lambda x: {
                         "id": x.id,
-                        "recipients": x.recipients,
-                        "template": x.template,
-                        "start_date": x._start_date,
-                        "end_date": x._end_date,
-                        "interval": x._interval,
-                        "last_executed": x._last_executed
+                        "recipients": list(map(lambda j: j.id, x.recipients)),
+                        "template": x.template.id,
+                        "start_date": x._start_date.strftime("%Y-%m-%d %H:%M:%S.%f"),
+                        "end_date": x._end_date.strftime("%Y-%m-%d %H:%M:%S.%f") if x._end_date else None,
+                        "interval": [x._interval.days, x._interval.seconds],
+                        "last_executed": x._last_executed.strftime("%Y-%m-%d %H:%M:%S.%f") if x._last_executed else None
                     },
                     results))
             }
