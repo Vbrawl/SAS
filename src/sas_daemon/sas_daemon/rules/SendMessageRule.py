@@ -51,6 +51,9 @@ class SendMessageRule:
     def next_execution_date(self) -> datetime|None:
         dtnow = datetime.now()
 
+        if self._last_executed is not None and self._interval == timedelta():
+            return None
+
         # If the starting date is in the future we don't need to add any intervals.
         if self._last_executed is None and self._start_date >= dtnow:
             return self._start_date
