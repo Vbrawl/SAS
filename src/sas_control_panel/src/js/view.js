@@ -31,8 +31,9 @@ function dom_template_item(template, is_header = false) {
     const checkbox = document.createElement('input');
     checkbox.classList.add("item-selector");
     checkbox.setAttribute("type", "checkbox");
-    if(is_header) checkbox.addEventListener("click", set_all_state);
-    else checkbox.addEventListener("click", set_header_state)
+    if(is_header) checkbox.addEventListener("change", set_all_state);
+    else checkbox.addEventListener("change", set_header_state)
+    checkbox.addEventListener("change", set_action_buttons_state);
     buttons.appendChild(checkbox);
 
     item.appendChild(msg);
@@ -112,8 +113,9 @@ function dom_person_item(person, is_header = false) {
     const checkbox = document.createElement('input');
     checkbox.classList.add("item-selector");
     checkbox.setAttribute("type", "checkbox");
-    if(is_header) checkbox.addEventListener("click", set_all_state);
-    else checkbox.addEventListener("click", set_header_state)
+    if(is_header) checkbox.addEventListener("change", set_all_state);
+    else checkbox.addEventListener("change", set_header_state)
+    checkbox.addEventListener("change", set_action_buttons_state);
     buttons.appendChild(checkbox);
 
     item.appendChild(fname);
@@ -281,8 +283,12 @@ function set_action_buttons_state(evt) {
         document.getElementsByClassName("edit-button")[0].setAttribute("disabled", '');
         document.getElementsByClassName("delete-button")[0].setAttribute("disabled", '');
     }
-    else { // count > 0
+    else if(count == 1) {
         document.getElementsByClassName("edit-button")[0].removeAttribute("disabled");
+        document.getElementsByClassName("delete-button")[0].removeAttribute("disabled");
+    }
+    else { // count > 1
+        document.getElementsByClassName("edit-button")[0].setAttribute("disabled", '');
         document.getElementsByClassName("delete-button")[0].removeAttribute("disabled");
     }
 
@@ -290,30 +296,51 @@ function set_action_buttons_state(evt) {
 }
 
 
+async function template_delete() {
+    const items = document.getElementsByClassName("item-selector");
+    const operations = [];
+
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if(item.checked) {
+            const itemID = parseInt(item.parentElement.parentElement.getAttribute("data-id"));
+            operations.push(client.template_remove(itemID));
+        }
+    }
+
+    for (let i = 0; i < operations.length; i++) {
+        const op = operations[i];
+        await op;
+    }
+
+    window.location.reload();
+}
 
 
 /**
  * The entry point of the script.
  */
+var client = new sasapi.Client();
 document.addEventListener("DOMContentLoaded", () => {
-    var client = new sasapi.Client();
     
+    document.getElementsByClassName("delete-button")[0].addEventListener("click", template_delete);
+
     client.connect("127.0.0.1", 8585);
 
     client.ws.onopen = async (evt) => {
-        // fill_with_templates(
-        //     document.getElementsByClassName("list")[0],
-        //     await client.template_get()
-        // );
+        fill_with_templates(
+            document.getElementsByClassName("list")[0],
+            await client.template_get()
+        );
 
         // fill_with_people(
         //     document.getElementsByClassName("list")[0],
         //     await client.people_get()
         // );
 
-        fill_with_rules(
-            document.getElementsByClassName("list")[0],
-            await client.rule_get()
-        );
+        // fill_with_rules(
+        //     document.getElementsByClassName("list")[0],
+        //     await client.rule_get()
+        // );
     }
 });
