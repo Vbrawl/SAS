@@ -172,6 +172,7 @@ class Database:
         self.conn.commit()
     
     def delete_person(self, id:int):
+        self.unlink_recipient_from_all_rules(id)
         self.conn.execute("DELETE FROM `People` WHERE `id`=?;", (id,))
         self.conn.commit()
     
