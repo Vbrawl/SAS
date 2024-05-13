@@ -184,7 +184,7 @@ class WSAPI:
                 results = self.db.get_people(limit, offset)
             
             return {
-                "status": list(map(
+                "results": list(map(
                     lambda x: {
                         "id": getattr(x, "id", None),
                         "first_name": getattr(x, "first_name", None),
