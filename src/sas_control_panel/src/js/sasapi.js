@@ -131,6 +131,16 @@
             }
         }
 
+        async send_and_wait(req) {
+            const mid = this.generateID();
+            req.id = mid;
+            this.ws.send(JSON.stringify(req));
+
+            const request = new sasapi.ClientRequest();
+            this.requests[mid] = request;
+            return await request.promise;
+        }
+
         /**
          * Fetch a list of templates.
          * NOTE: To fetch all templates don't use any parameters.
@@ -140,24 +150,14 @@
          * @returns Array of Templates
          */
         async template_get(id = null, limit = null, offset = null) {
-            // Prepare identifier
-            var mid = this.generateID();
-
-            // Send request
-            this.ws.send(JSON.stringify({
-                id: mid,
+            const data = await this.send_and_wait({
                 action: ["template", "get"],
                 parameters: {
                     id: id,
                     limit: limit,
                     offset: offset
                 }
-            }));
-
-            // Wait for reply
-            var request = new sasapi.ClientRequest()
-            this.requests[mid] = request;
-            var data = await request.promise;
+            });
 
             // Convert everything to templates
             var res = [];
@@ -182,23 +182,16 @@
 
 
         async people_get(id = null, limit = null, offset = null) {
-            const mid = this.generateID();
-
-            this.ws.send(JSON.stringify({
-                id: mid,
+            const data = this.send_and_wait({
                 action: ["people", "get"],
                 parameters: {
                     id: id,
                     limit: limit,
                     offset: offset
                 }
-            }));
+            });
 
-            const request = new sasapi.ClientRequest();
-            this.requests[mid] = request;
-            var data = await request.promise;
-
-
+            // Convert to objects
             var res = [];
             for (let i = 0; i < data.results.length; i++) {
                 const pperson = data.results[i];
@@ -207,7 +200,6 @@
                     pperson.first_name, pperson.last_name,
                     pperson.address));
             }
-            console.log(data);
             return res;
         }
 
@@ -220,6 +212,36 @@
         }
 
         people_remove() {
+            // TODO: Implement me
+        }
+
+        async rule_get(id = null, limit = null, offset = null) {
+            const data = await this.send_and_wait({
+                action: ["rule", "get"],
+                parameters: {
+                    id: id,
+                    limit: limit,
+                    offset: offset
+                }
+            });
+
+            // Convert to objects
+            var res = [];
+            for (let i = 0; i < data.length; i++) {
+                const prule = data[i];
+                res.push(sasapi.SendMessageRule()) // TODO: Finish conversion
+            }
+        }
+
+        rule_add() {
+            // TODO: Implement me
+        }
+
+        rule_alter() {
+            // TODO: Implement me
+        }
+
+        rule_remove() {
             // TODO: Implement me
         }
     }
