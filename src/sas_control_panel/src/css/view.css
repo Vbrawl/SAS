@@ -1,0 +1,100 @@
+:root {
+    --list-item-wrapper-height: 3em;
+    --button-holder-width: 7em;
+    --colon-separator-width: 2px;
+
+    --list-item-border-width: 2px;
+    --list-item-left-border-disposition: 2px;
+
+    --list-item-border-padding: 2px;
+}
+
+/************
+* List main *
+************/
+.list {
+    box-sizing: border-box;
+    display: flex;
+    flex-flow: column;
+    flex-wrap: nowrap;
+
+    margin: auto;
+    width: 90%;
+    min-height: 20em;
+
+    border: black var(--list-item-border-width) solid;
+}
+
+
+/********************
+* List Item Wrapper *
+********************/
+.list-item-wrapper {
+    width: 100%;
+    min-height: var(--list-item-wrapper-height);
+    
+    position: relative;
+}
+
+.list-item-wrapper.list-header {border-bottom: black var(--list-item-border-width) solid;}
+.list-item-wrapper.list-header::after {border: none;}
+
+.list-item-wrapper:last-child::after {border: transparent 0;}
+.list-item-wrapper::after {
+    content: '';
+    
+    position: absolute;
+    left: var(--list-item-left-border-disposition);
+    bottom: 0;
+    
+    width: calc(100% - var(--list-item-left-border-disposition) * 2);
+    border-bottom: var(--list-item-border-width) black solid;
+}
+
+
+/***********************
+* Colon for List Items *
+***********************/
+.col {
+    vertical-align: middle;
+    display: inline-block;
+    background: black;
+    width: var(--colon-separator-width);
+    min-height: var(--list-item-wrapper-height);
+}
+
+/************************
+* Template Message Part *
+************************/
+.template-message {
+    vertical-align: middle;
+    display: inline-block;
+    width: calc(100% - var(--button-holder-width) - var(--colon-separator-width));
+    height: var(--list-item-wrapper-height);
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.list-header .template-message {
+    height: unset;
+    text-align: center;
+}
+
+
+/*********************
+* Button Holder Part *
+*********************/
+.button-holder {
+    vertical-align: middle;
+    display: inline-flex;
+    flex-flow: column;
+    justify-content: center;
+
+    text-align: center;
+
+    width: var(--button-holder-width);
+    height: var(--list-item-wrapper-height);
+}
+
+.list-header .button-holder {justify-content: inherit;}
