@@ -3,6 +3,26 @@
 
 
 (function(sasapi) {
+
+    function date_from_string(s) {
+        const splits        = s.split(' ');
+        const date          = splits[0].split('-');
+        const time          = splits[1].split(':');
+        const sms_splits    = time[2].split('.');
+
+        const year          = date[0];
+        const month         = date[1];
+        const day           = date[2];
+
+        const hour          = time[0];
+        const minute        = time[1];
+        const second        = sms_splits[0];
+        const millisec      = sms_splits[1];
+
+        return new Date(year, month - 1, day, hour, minute, second, millisec);
+    }
+
+
     sasapi.TemplateArguments = class {
         /**
          * @param {Array} args All keyword parameters should go here.
@@ -29,6 +49,10 @@
             if(last_name != null) this.args.last_name = last_name;
             if(address != address) this.args.address = address;
         }
+
+        static fromJSON(data) {
+            return new sasapi.PersonTemplateArguments(data.telephone, data.id, data.first_name, data.last_name, data.address, data);
+        }
     }
 
     sasapi.Template = class {
@@ -40,15 +64,19 @@
             this.id = id;
             this.message = message;
         }
+
+        static fromJSON(data) {
+            return new sasapi.Template(data.message, data.id);
+        }
     }
 
     sasapi.SendMessageRule = class {
         /**
-         * @param {Array} recipients 
-         * @param {sasapi.Template} template 
+         * @param {Array<int>} recipients 
+         * @param {int} template 
          * @param {Date} start_date 
          * @param {Date} end_date 
-         * @param {Date} interval Acts as timedelta (difference between times)
+         * @param {int} interval Acts as timedelta (difference between times)
          * @param {Date} last_executed 
          * @param {int} id 
          */
@@ -60,6 +88,19 @@
             this.interval = interval != null ? interval : new Date(0, 0, 0, 0, 0, 0, 0); // interval or null date.
             this.last_executed = last_executed;
             this.id = id;
+        }
+
+
+        static fromJSON(data) {
+            return new sasapi.SendMessageRule(
+                data.recipients,
+                data.template,
+                date_from_string(data.start_date),
+                data.end_date ? date_from_string(data.end_date) : null,
+                data.interval,
+                data.last_executed ? date_from_string(data.last_executed) : null,
+                data.id
+            );
         }
     }
 
@@ -163,7 +204,7 @@
             var res = [];
             for (let i = 0; i < data.results.length; i++) {
                 const ptemplate = data.results[i];
-                res.push(new sasapi.Template(ptemplate.message, ptemplate.id));
+                res.push(sasapi.Template.fromJSON(ptemplate));
             }
             return res;
         }
@@ -195,10 +236,7 @@
             var res = [];
             for (let i = 0; i < data.results.length; i++) {
                 const pperson = data.results[i];
-                res.push(new sasapi.PersonTemplateArguments(
-                    pperson.telephone, pperson.id,
-                    pperson.first_name, pperson.last_name,
-                    pperson.address));
+                res.push(sasapi.PersonTemplateArguments.fromJSON(pperson));
             }
             return res;
         }
@@ -227,10 +265,11 @@
 
             // Convert to objects
             var res = [];
-            for (let i = 0; i < data.length; i++) {
-                const prule = data[i];
-                res.push(sasapi.SendMessageRule()) // TODO: Finish conversion
+            for (let i = 0; i < data.results.length; i++) {
+                const prule = data.results[i];
+                res.push(sasapi.SendMessageRule.fromJSON(prule))
             }
+            return res;
         }
 
         rule_add() {
