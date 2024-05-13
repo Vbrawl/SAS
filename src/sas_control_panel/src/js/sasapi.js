@@ -4,7 +4,7 @@
 
 (function(sasapi) {
 
-    function date_from_string(s) {
+    sasapi.date_from_string = function(s) {
         const splits        = s.split(' ');
         const date          = splits[0].split('-');
         const time          = splits[1].split(':');
@@ -20,6 +20,10 @@
         const millisec      = sms_splits[1];
 
         return new Date(year, month - 1, day, hour, minute, second, millisec);
+    }
+
+    sasapi.date_to_string = function(d) {
+        return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}.${d.getMilliseconds()}`;
     }
 
 
@@ -80,12 +84,12 @@
          * @param {Date} last_executed 
          * @param {int} id 
          */
-        constructor(recipients, template, start_date, end_date = null, interval = null, last_executed = null, id = null) {
+        constructor(recipients, template, start_date, end_date = null, interval = 0, last_executed = null, id = null) {
             this.recipients = recipients;
             this.template = template;
             this.start_date = start_date;
             this.end_date = end_date;
-            this.interval = interval != null ? interval : new Date(0, 0, 0, 0, 0, 0, 0); // interval or null date.
+            this.interval = interval;
             this.last_executed = last_executed;
             this.id = id;
         }
@@ -95,10 +99,10 @@
             return new sasapi.SendMessageRule(
                 data.recipients,
                 data.template,
-                date_from_string(data.start_date),
-                data.end_date ? date_from_string(data.end_date) : null,
+                sasapi.date_from_string(data.start_date),
+                data.end_date ? sasapi.date_from_string(data.end_date) : null,
                 data.interval,
-                data.last_executed ? date_from_string(data.last_executed) : null,
+                data.last_executed ? sasapi.date_from_string(data.last_executed) : null,
                 data.id
             );
         }
