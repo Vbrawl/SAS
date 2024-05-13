@@ -87,9 +87,13 @@ class Daemon:
     async def collect_rules_indefinitely(self):
         while True:
             async with self.op_lock:
+                keys_to_remove = []
                 for k,v in self.operations.items():
                     if v.done():
-                        del self.operations[k]
+                        keys_to_remove.append(k)
+                
+                for k in keys_to_remove:
+                    del self.operations[k]
             await asyncio.sleep(self.collect_rules_interval)
 
     async def start(self):
