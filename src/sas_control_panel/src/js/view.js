@@ -141,6 +141,80 @@ function fill_with_people(dom_element, people) {
     }
 }
 
+/**
+ * Create a DOM-element with the details of a rule.
+ * @param {SendMessageRule} rule The rule object
+ * @param {boolean} is_header When true the rule object is ignored and a header is generated.
+ * @returns The generated object.
+ */
+function dom_rule_item(rule, is_header = false) {
+    const item = document.createElement("div");
+    item.classList.add("list-item-wrapper");
+    if(!is_header) {item.setAttribute('data-id', rule.id);}
+    else {item.classList.add("list-header");}
+
+    const recipient_count = document.createElement("div");
+    recipient_count.classList.add("recipient-count");
+    recipient_count.textContent = is_header ? 'Recipient Count' : rule.recipients.length;
+
+    const sep1 = document.createElement('span');
+    sep1.classList.add("col");
+
+
+    const start_date = document.createElement("div");
+    start_date.classList.add("start-date");
+    start_date.textContent = is_header ? "Start Date" : sasapi.date_to_string(rule.start_date);
+
+    const sep2 = document.createElement('span');
+    sep2.classList.add("col");
+
+    const end_date = document.createElement("div");
+    end_date.classList.add("end-date");
+    end_date.textContent = is_header ? "End Date" : (rule.end_date ? sasapi.date_to_string(rule.end_date) : '');
+
+    const sep3 = document.createElement('span');
+    sep3.classList.add("col");
+
+    const buttons = document.createElement('div');
+    buttons.classList.add("button-holder");
+
+
+    if(is_header) {
+        const button_label = document.createElement('div');
+        button_label.classList.add("button-holder-label");
+        button_label.textContent = "Select All";
+        buttons.appendChild(button_label);
+    }
+    const checkbox = document.createElement('input');
+    checkbox.classList.add("item-selector");
+    checkbox.setAttribute("type", "checkbox");
+    if(is_header) checkbox.addEventListener("click", set_all_state);
+    else checkbox.addEventListener("click", set_header_state)
+    buttons.appendChild(checkbox);
+
+    item.appendChild(recipient_count);
+    item.appendChild(sep1);
+    item.appendChild(start_date);
+    item.appendChild(sep2);
+    item.appendChild(end_date);
+    item.appendChild(sep3);
+    item.appendChild(buttons);
+    return item;
+}
+
+function fill_with_rules(dom_element, rules) {
+    dom_element.html = "";
+
+    const header = dom_rule_item(null, true);
+    dom_element.appendChild(header);
+
+    for (let i = 0; i < rules.length; i++) {
+        const rule = rules[i];
+        const item = dom_rule_item(rule);
+        dom_element.appendChild(item);
+    }
+}
+
 
 /**
  * Set all checkboxes to match the header's one.
@@ -200,9 +274,14 @@ document.addEventListener("DOMContentLoaded", () => {
         //     await client.template_get()
         // );
 
-        fill_with_people(
+        // fill_with_people(
+        //     document.getElementsByClassName("list")[0],
+        //     await client.people_get()
+        // );
+
+        fill_with_rules(
             document.getElementsByClassName("list")[0],
-            await client.people_get()
+            await client.rule_get()
         );
     }
 });
