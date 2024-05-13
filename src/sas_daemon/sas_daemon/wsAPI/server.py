@@ -258,7 +258,7 @@ class WSAPI:
                         "template": x.template.id,
                         "start_date": x._start_date.strftime("%Y-%m-%d %H:%M:%S.%f"),
                         "end_date": x._end_date.strftime("%Y-%m-%d %H:%M:%S.%f") if x._end_date else None,
-                        "interval": [x._interval.days, x._interval.seconds],
+                        "interval": x._interval.total_seconds(),
                         "last_executed": x._last_executed.strftime("%Y-%m-%d %H:%M:%S.%f") if x._last_executed else None
                     },
                     results))
