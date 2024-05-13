@@ -221,8 +221,15 @@
             // TODO: Alter template in the database
         }
 
-        template_remove(template) {
-            // TODO: Remove template from the database
+        async template_remove(id) {
+            const resp = await this.send_and_wait({
+                action: ["template", "remove"],
+                parameters: {
+                    id: id
+                }
+            });
+
+            return resp.hasOwnProperty("status") && resp.status == "success";
         }
 
 
