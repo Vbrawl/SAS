@@ -316,6 +316,26 @@ async function template_delete() {
     window.location.reload();
 }
 
+async function people_delete() {
+    const items = document.getElementsByClassName("item-selector");
+    const operations = [];
+
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if(item.checked) {
+            const itemID = parseInt(item.parentElement.parentElement.getAttribute("data-id"));
+            operations.push(client.people_remove(itemID));
+        }
+    }
+
+    for (let i = 0; i < operations.length; i++) {
+        const op = operations[i];
+        await op;
+    }
+
+    window.location.reload();
+}
+
 
 /**
  * The entry point of the script.
@@ -323,20 +343,21 @@ async function template_delete() {
 var client = new sasapi.Client();
 document.addEventListener("DOMContentLoaded", () => {
     
-    document.getElementsByClassName("delete-button")[0].addEventListener("click", template_delete);
+    // document.getElementsByClassName("delete-button")[0].addEventListener("click", template_delete);
+    document.getElementsByClassName("delete-button")[0].addEventListener("click", people_delete);
 
     client.connect("127.0.0.1", 8585);
 
     client.ws.onopen = async (evt) => {
-        fill_with_templates(
-            document.getElementsByClassName("list")[0],
-            await client.template_get()
-        );
-
-        // fill_with_people(
+        // fill_with_templates(
         //     document.getElementsByClassName("list")[0],
-        //     await client.people_get()
+        //     await client.template_get()
         // );
+
+        fill_with_people(
+            document.getElementsByClassName("list")[0],
+            await client.people_get()
+        );
 
         // fill_with_rules(
         //     document.getElementsByClassName("list")[0],

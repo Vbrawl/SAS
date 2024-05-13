@@ -260,8 +260,15 @@
             // TODO: Implement me
         }
 
-        people_remove() {
-            // TODO: Implement me
+        async people_remove(id) {
+            const resp = await this.send_and_wait({
+                action: ["people", "remove"],
+                parameters: {
+                    id: id
+                }
+            });
+
+            return resp.hasOwnProperty("status") && resp.status == "success";
         }
 
         async rule_get(id = null, limit = null, offset = null) {
