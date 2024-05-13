@@ -179,5 +179,48 @@
         template_remove(template) {
             // TODO: Remove template from the database
         }
+
+
+        async people_get(id = null, limit = null, offset = null) {
+            const mid = this.generateID();
+
+            this.ws.send(JSON.stringify({
+                id: mid,
+                action: ["people", "get"],
+                parameters: {
+                    id: id,
+                    limit: limit,
+                    offset: offset
+                }
+            }));
+
+            const request = new sasapi.ClientRequest();
+            this.requests[mid] = request;
+            var data = await request.promise;
+
+
+            var res = [];
+            for (let i = 0; i < data.results.length; i++) {
+                const pperson = data.results[i];
+                res.push(new sasapi.PersonTemplateArguments(
+                    pperson.telephone, pperson.id,
+                    pperson.first_name, pperson.last_name,
+                    pperson.address));
+            }
+            console.log(data);
+            return res;
+        }
+
+        people_add() {
+            // TODO: Implement me
+        }
+
+        people_alter() {
+            // TODO: Implement me
+        }
+
+        people_remove() {
+            // TODO: Implement me
+        }
     }
 }(window.sasapi = window.sasapi || {}))

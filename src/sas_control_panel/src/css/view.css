@@ -7,6 +7,7 @@
     --list-item-left-border-disposition: 2px;
 
     --list-item-border-padding: 2px;
+    --list-minimum-width: 50em;
 }
 
 /************
@@ -20,6 +21,7 @@
 
     margin: auto;
     width: 90%;
+    min-width: var(--list-minimum-width);
     min-height: 20em;
 
     border: black var(--list-item-border-width) solid;
@@ -31,6 +33,7 @@
 ********************/
 .list-item-wrapper {
     width: 100%;
+    min-width: var(--list-minimum-width);
     min-height: var(--list-item-wrapper-height);
     
     position: relative;
@@ -63,20 +66,28 @@
     min-height: var(--list-item-wrapper-height);
 }
 
-/************************
-* Template Message Part *
-************************/
-.template-message {
+/*************
+* List Parts *
+*************/
+.template-message,
+.first-name, .last-name, .telephone, .address {
     vertical-align: middle;
     display: inline-block;
-    width: calc(100% - var(--button-holder-width) - var(--colon-separator-width));
     height: var(--list-item-wrapper-height);
+    width: calc((99% - var(--button-holder-width)) / 4);
 
     overflow: hidden;
     text-overflow: ellipsis;
 }
+.template-message {
+    width: calc(99% - var(--button-holder-width) - var(--colon-separator-width));
+}
 
-.list-header .template-message {
+.list-header .template-message,
+.list-header .first-name, .first-name,
+.list-header .last-name, .last-name,
+.list-header .telephone, .telephone,
+.list-header .address, .address {
     height: unset;
     text-align: center;
 }
