@@ -1,3 +1,8 @@
+let GETparams = new URLSearchParams(window.location.search);
+let page_object_type = GETparams.get("object_type");
+if(page_object_type == null) {page_object_type = "template";}
+
+
 function add_section(item, class_name, textContent) {
     const section = document.createElement("div");
     section.classList.add(class_name);
@@ -185,15 +190,31 @@ var client = new sasapi.Client();
 document.addEventListener("DOMContentLoaded", () => {
     
     document.getElementsByClassName("delete-button")[0].addEventListener("click", () => {
-        delete_action("template");
+        delete_action(page_object_type);
     });
 
     client.connect("127.0.0.1", 8585);
 
     client.ws.onopen = async (evt) => {
+        var items = [];
+
+        switch (page_object_type) {
+            case "template":
+                items = await client.template_get();
+                break;
+
+            case "people":
+                items = await client.people_get();
+                break;
+
+            case "rule":
+                items = await client.rule_get();
+                break;
+        }
+
         fill_list(
-            "template",
-            await client.template_get(),
+            page_object_type,
+            items,
             document.getElementsByClassName("list")[0]
         );
     }
