@@ -193,6 +193,18 @@ document.addEventListener("DOMContentLoaded", () => {
         delete_action(page_object_type);
     });
 
+    document.getElementsByClassName("edit-button")[0].addEventListener("click", () => {
+        const items = document.getElementsByClassName("item-selector");
+
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if(item.checked) {
+                const itemID = parseInt(item.parentElement.parentElement.getAttribute("data-id"));
+                window.location.href = `/html/edit-${page_object_type}.html?id=${itemID}`;
+            }
+        }
+    });
+
     client.connect("127.0.0.1", 8585);
 
     client.ws.onopen = async (evt) => {
