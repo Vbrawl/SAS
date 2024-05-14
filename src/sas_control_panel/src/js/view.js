@@ -1,23 +1,48 @@
+function add_section(item, class_name, textContent) {
+    const section = document.createElement("div");
+    section.classList.add(class_name);
+    section.textContent = textContent;
 
-/**
- * Create a DOM-element with the details of a template.
- * @param {Template} template The template object
- * @param {boolean} is_header When true the template object is ignored and a header is generated.
- * @returns The generated object.
- */
-function dom_template_item(template, is_header = false) {
+    item.appendChild(section);
+}
+
+function add_colon(item) {
+    const sep = document.createElement('span');
+    sep.classList.add("col");
+
+    item.appendChild(sep);
+}
+
+function dom_list_item(obj_name, obj, is_header = false) {
     const item = document.createElement("div");
     item.classList.add("list-item-wrapper");
-    if(!is_header) {item.setAttribute('data-id', template.id);}
-    else {item.classList.add("list-header");}
+    if(is_header) {item.classList.add("list-header");}
+    else {item.setAttribute("data-id", obj_name == "person" ? obj.args.id : obj.id);}
 
-    const msg = document.createElement("div");
-    msg.classList.add("template-message");
-    msg.textContent = is_header ? 'Template Message' : template.message;
+    switch (obj_name) {
+        case "template":
+            add_section(item, "template-message", is_header ? "Template Message" : obj.message);
+            break;
+        case "people":
+            add_section(item, "first-name", is_header ? "First Name" : obj.args.first_name);
+            add_colon(item);
+            add_section(item, "last-name", is_header ? "Last Name" : obj.args.last_name);
+            add_colon(item);
+            add_section(item, "telephone", is_header ? "Telephone" : obj.args.telephone);
+            add_colon(item);
+            add_section(item, "address", is_header ? "Address" : obj.args.address);
+            break;
+        case "rule":
+            add_section(item, "recipient-count", is_header ? 'Recipient Count' : obj.recipients.length);
+            add_colon(item);
+            add_section(item, "start-date", is_header ? "Start Date" : sasapi.date_to_string(obj.start_date));
+            add_colon(item);
+            add_section(item, "end-date", is_header ? "End Date" : (obj.end_date ? sasapi.date_to_string(obj.end_date) : ''));
+            break;
+    }
 
-    const sep1 = document.createElement('span');
-    sep1.classList.add("col");
 
+    add_colon(item);
     const buttons = document.createElement('div');
     buttons.classList.add("button-holder");
 
@@ -36,184 +61,20 @@ function dom_template_item(template, is_header = false) {
     checkbox.addEventListener("change", set_action_buttons_state);
     buttons.appendChild(checkbox);
 
-    item.appendChild(msg);
-    item.appendChild(sep1);
     item.appendChild(buttons);
     return item;
 }
 
-/**
- * Fill dom_element with dom template items.
- * @param {DOMElement} dom_element The element to fill.
- * @param {Array<Template>} templates The list with all templates.
- */
-function fill_with_templates(dom_element, templates) {
-    dom_element.html = "";
+async function fill_list(object_name, objects, dom_element) {
+    dom_element.html = '';
 
-    const header = dom_template_item(null, true);
-    dom_element.appendChild(header);
+    dom_element.appendChild(
+        dom_list_item(object_name, null, true)
+    );
 
-    for (let i = 0; i < templates.length; i++) {
-        const template = templates[i];
-        const item = dom_template_item(template);
-        dom_element.appendChild(item);
-    }
-}
-
-/**
- * Create a DOM-element with the details of a PersonTemplateArguments.
- * @param {PersonTemplateArguments} person The PersonTemplateArguments object.
- * @param {boolean} is_header When true the PersonTemplateArguments object is ignored and a header is generated.
- * @returns The generated object.
- */
-function dom_person_item(person, is_header = false) {
-    const item = document.createElement("div");
-    item.classList.add("list-item-wrapper");
-    if(!is_header) {item.setAttribute('data-id', person.args.id);}
-    else {item.classList.add("list-header");}
-
-    const fname = document.createElement("div");
-    fname.classList.add("first-name");
-    fname.textContent = is_header ? "First Name" : person.args.first_name;
-    
-    const sep1 = document.createElement('span');
-    sep1.classList.add("col");
-
-    const lname = document.createElement("div");
-    lname.classList.add("last-name");
-    lname.textContent = is_header ? "Last Name" : person.args.last_name;
-
-    const sep2 = document.createElement('span');
-    sep2.classList.add("col");
-
-    const telephone = document.createElement("div");
-    telephone.classList.add("telephone");
-    telephone.textContent = is_header ? "Telephone" : person.args.telephone;
-
-    const sep3 = document.createElement("div");
-    sep3.classList.add("col");
-
-    const address = document.createElement("div");
-    address.classList.add("address");
-    address.textContent = is_header ? "Address" : person.args.address;
-
-    const sep4 = document.createElement("div");
-    sep4.classList.add("col");
-
-    const buttons = document.createElement('div');
-    buttons.classList.add("button-holder");
-
-
-    if(is_header) {
-        const button_label = document.createElement('div');
-        button_label.classList.add("button-holder-label");
-        button_label.textContent = "Select All";
-        buttons.appendChild(button_label);
-    }
-    const checkbox = document.createElement('input');
-    checkbox.classList.add("item-selector");
-    checkbox.setAttribute("type", "checkbox");
-    if(is_header) checkbox.addEventListener("change", set_all_state);
-    else checkbox.addEventListener("change", set_header_state)
-    checkbox.addEventListener("change", set_action_buttons_state);
-    buttons.appendChild(checkbox);
-
-    item.appendChild(fname);
-    item.appendChild(sep1);
-    item.appendChild(lname);
-    item.appendChild(sep2);
-    item.appendChild(telephone);
-    item.appendChild(sep3);
-    item.appendChild(address);
-    item.appendChild(sep4);
-    item.appendChild(buttons);
-    return item;
-}
-
-function fill_with_people(dom_element, people) {
-    dom_element.html = "";
-
-    const header = dom_person_item(null, true);
-    dom_element.appendChild(header);
-
-    for (let i = 0; i < people.length; i++) {
-        const person = people[i];
-        const item = dom_person_item(person);
-        dom_element.appendChild(item);
-    }
-}
-
-/**
- * Create a DOM-element with the details of a rule.
- * @param {SendMessageRule} rule The rule object
- * @param {boolean} is_header When true the rule object is ignored and a header is generated.
- * @returns The generated object.
- */
-function dom_rule_item(rule, is_header = false) {
-    const item = document.createElement("div");
-    item.classList.add("list-item-wrapper");
-    if(!is_header) {item.setAttribute('data-id', rule.id);}
-    else {item.classList.add("list-header");}
-
-    const recipient_count = document.createElement("div");
-    recipient_count.classList.add("recipient-count");
-    recipient_count.textContent = is_header ? 'Recipient Count' : rule.recipients.length;
-
-    const sep1 = document.createElement('span');
-    sep1.classList.add("col");
-
-
-    const start_date = document.createElement("div");
-    start_date.classList.add("start-date");
-    start_date.textContent = is_header ? "Start Date" : sasapi.date_to_string(rule.start_date);
-
-    const sep2 = document.createElement('span');
-    sep2.classList.add("col");
-
-    const end_date = document.createElement("div");
-    end_date.classList.add("end-date");
-    end_date.textContent = is_header ? "End Date" : (rule.end_date ? sasapi.date_to_string(rule.end_date) : '');
-
-    const sep3 = document.createElement('span');
-    sep3.classList.add("col");
-
-    const buttons = document.createElement('div');
-    buttons.classList.add("button-holder");
-
-
-    if(is_header) {
-        const button_label = document.createElement('div');
-        button_label.classList.add("button-holder-label");
-        button_label.textContent = "Select All";
-        buttons.appendChild(button_label);
-    }
-    const checkbox = document.createElement('input');
-    checkbox.classList.add("item-selector");
-    checkbox.setAttribute("type", "checkbox");
-    if(is_header) checkbox.addEventListener("change", set_all_state);
-    else checkbox.addEventListener("change", set_header_state);
-    checkbox.addEventListener("change", set_action_buttons_state);
-    buttons.appendChild(checkbox);
-
-    item.appendChild(recipient_count);
-    item.appendChild(sep1);
-    item.appendChild(start_date);
-    item.appendChild(sep2);
-    item.appendChild(end_date);
-    item.appendChild(sep3);
-    item.appendChild(buttons);
-    return item;
-}
-
-function fill_with_rules(dom_element, rules) {
-    dom_element.html = "";
-
-    const header = dom_rule_item(null, true);
-    dom_element.appendChild(header);
-
-    for (let i = 0; i < rules.length; i++) {
-        const rule = rules[i];
-        const item = dom_rule_item(rule);
+    for (let i = 0; i < objects.length; i++) {
+        const obj = objects[i];
+        const item = dom_list_item(object_name, obj);
         dom_element.appendChild(item);
     }
 }
@@ -296,7 +157,7 @@ function set_action_buttons_state(evt) {
 }
 
 
-async function template_delete() {
+async function delete_action(object_name) {
     const items = document.getElementsByClassName("item-selector");
     const operations = [];
 
@@ -304,27 +165,7 @@ async function template_delete() {
         const item = items[i];
         if(item.checked) {
             const itemID = parseInt(item.parentElement.parentElement.getAttribute("data-id"));
-            operations.push(client.template_remove(itemID));
-        }
-    }
-
-    for (let i = 0; i < operations.length; i++) {
-        const op = operations[i];
-        await op;
-    }
-
-    window.location.reload();
-}
-
-async function people_delete() {
-    const items = document.getElementsByClassName("item-selector");
-    const operations = [];
-
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if(item.checked) {
-            const itemID = parseInt(item.parentElement.parentElement.getAttribute("data-id"));
-            operations.push(client.people_remove(itemID));
+            operations.push(client.common_remove(object_name, itemID));
         }
     }
 
@@ -343,25 +184,17 @@ async function people_delete() {
 var client = new sasapi.Client();
 document.addEventListener("DOMContentLoaded", () => {
     
-    // document.getElementsByClassName("delete-button")[0].addEventListener("click", template_delete);
-    document.getElementsByClassName("delete-button")[0].addEventListener("click", people_delete);
+    document.getElementsByClassName("delete-button")[0].addEventListener("click", () => {
+        delete_action("template");
+    });
 
     client.connect("127.0.0.1", 8585);
 
     client.ws.onopen = async (evt) => {
-        // fill_with_templates(
-        //     document.getElementsByClassName("list")[0],
-        //     await client.template_get()
-        // );
-
-        fill_with_people(
-            document.getElementsByClassName("list")[0],
-            await client.people_get()
+        fill_list(
+            "template",
+            await client.template_get(),
+            document.getElementsByClassName("list")[0]
         );
-
-        // fill_with_rules(
-        //     document.getElementsByClassName("list")[0],
-        //     await client.rule_get()
-        // );
     }
 });
