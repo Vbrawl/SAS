@@ -1,0 +1,52 @@
+:root {
+    --header-width: 20em;
+    --header-height: 2em;
+    --header-category-lifter-height: 3px;
+    --header-category-lifter-color: grey;
+}
+
+
+/***********************************
+* Category-Selector and Categories *
+***********************************/
+.category-selector {
+    display: flex;
+
+    width: var(--header-width);
+    height: var(--header-height);
+    margin: auto;
+}
+
+.category {
+    display: inline-block;
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    text-align: center;
+    align-content: center;
+
+    border-left: grey 3px solid;
+}
+.category:last-child {
+    border-right: grey 3px solid;
+}
+
+.category::after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: 0;
+    
+    width: 100%;
+    height: 100%;
+    background: var(--header-category-lifter-color);
+    
+    max-height: 0;
+    transition: max-height 50ms;
+}
+
+.category:hover::after {
+    max-height: var(--header-category-lifter-height);
+}
