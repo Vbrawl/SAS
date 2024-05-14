@@ -186,6 +186,36 @@
             return await request.promise;
         }
 
+        async common_get(object_converter, object_name, id = null, limit = null, offset = null) {
+            const data = await this.send_and_wait({
+                action: [object_name, 'get'],
+                parameters: {
+                    id: id,
+                    limit: limit,
+                    offset: offset
+                }
+            });
+
+            // Convert to objects
+            var res = [];
+            for (let i = 0; i < data.results.length; i++) {
+                const item = data.results[i];
+                res.push(object_converter.fromJSON(item));
+            }
+            return res;
+        }
+
+        async common_remove(object_name, id) {
+            const resp = await this.send_and_wait({
+                action: [object_name, "remove"],
+                parameters: {
+                    id: id
+                }
+            });
+
+            return resp.hasOwnProperty("status") && resp.status == "success";
+        }
+
         /**
          * Fetch a list of templates.
          * NOTE: To fetch all templates don't use any parameters.
@@ -195,22 +225,7 @@
          * @returns Array of Templates
          */
         async template_get(id = null, limit = null, offset = null) {
-            const data = await this.send_and_wait({
-                action: ["template", "get"],
-                parameters: {
-                    id: id,
-                    limit: limit,
-                    offset: offset
-                }
-            });
-
-            // Convert everything to templates
-            var res = [];
-            for (let i = 0; i < data.results.length; i++) {
-                const ptemplate = data.results[i];
-                res.push(sasapi.Template.fromJSON(ptemplate));
-            }
-            return res;
+            return await this.common_get(sasapi.Template, "template", id, limit, offset);
         }
 
         template_add(template) {
@@ -222,34 +237,12 @@
         }
 
         async template_remove(id) {
-            const resp = await this.send_and_wait({
-                action: ["template", "remove"],
-                parameters: {
-                    id: id
-                }
-            });
-
-            return resp.hasOwnProperty("status") && resp.status == "success";
+            return await this.common_remove("template", id);
         }
 
 
         async people_get(id = null, limit = null, offset = null) {
-            const data = await this.send_and_wait({
-                action: ["people", "get"],
-                parameters: {
-                    id: id,
-                    limit: limit,
-                    offset: offset
-                }
-            });
-
-            // Convert to objects
-            var res = [];
-            for (let i = 0; i < data.results.length; i++) {
-                const pperson = data.results[i];
-                res.push(sasapi.PersonTemplateArguments.fromJSON(pperson));
-            }
-            return res;
+            return await this.common_get(sasapi.PersonTemplateArguments, "people", id, limit, offset);
         }
 
         people_add() {
@@ -261,33 +254,11 @@
         }
 
         async people_remove(id) {
-            const resp = await this.send_and_wait({
-                action: ["people", "remove"],
-                parameters: {
-                    id: id
-                }
-            });
-
-            return resp.hasOwnProperty("status") && resp.status == "success";
+            return await this.common_remove("people", id);
         }
 
         async rule_get(id = null, limit = null, offset = null) {
-            const data = await this.send_and_wait({
-                action: ["rule", "get"],
-                parameters: {
-                    id: id,
-                    limit: limit,
-                    offset: offset
-                }
-            });
-
-            // Convert to objects
-            var res = [];
-            for (let i = 0; i < data.results.length; i++) {
-                const prule = data.results[i];
-                res.push(sasapi.SendMessageRule.fromJSON(prule))
-            }
-            return res;
+            return await this.common_get(sasapi.SendMessageRule, "rule", id, limit, offset);
         }
 
         rule_add() {
@@ -298,8 +269,8 @@
             // TODO: Implement me
         }
 
-        rule_remove() {
-            // TODO: Implement me
+        async rule_remove() {
+            return await this.common_remove("rule", id);
         }
     }
 }(window.sasapi = window.sasapi || {}))
