@@ -232,12 +232,18 @@
             return await this.common_get(sasapi.Template, "template", id, limit, offset);
         }
 
-        template_add(template) {
-            // TODO: Add template to the database
+        async template_add(template) {
+            const data = await this.send_and_wait({
+                action: ["template", "add"],
+                parameters: {
+                    message: template.message
+                }
+            });
+
+            return (data.hasOwnProperty("id") ? data.id : null);
         }
 
         async template_alter(template) {
-            // TODO: Alter template in the database
             const data = await this.send_and_wait({
                 action: ["template", "alter"],
                 parameters: {
