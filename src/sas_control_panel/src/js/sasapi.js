@@ -51,7 +51,7 @@
             if(id != null) this.args.id = id;
             if(first_name != null) this.args.first_name = first_name;
             if(last_name != null) this.args.last_name = last_name;
-            if(address != address) this.args.address = address;
+            if(address != null) this.args.address = address;
         }
 
         static fromJSON(data) {
@@ -213,7 +213,7 @@
                 parameters: params
             });
 
-            return (resp.hasOwnProperty("id") ? resp.id : null);
+            return (resp.hasOwnProperty("added_id") ? resp.added_id : null);
         }
 
         async common_alter(object_name, params) {
@@ -268,12 +268,23 @@
             return await this.common_get(sasapi.PersonTemplateArguments, "people", id, limit, offset);
         }
 
-        people_add() {
-            // TODO: Implement me
+        async people_add(person) {
+            return await this.common_add("people", {
+                first_name: person.args.first_name,
+                last_name: person.args.last_name,
+                telephone: person.args.telephone,
+                address: person.args.address
+            });
         }
 
-        people_alter() {
-            // TODO: Implement me
+        async people_alter(person) {
+            return await this.common_alter("people", {
+                id: person.args.id,
+                first_name: person.args.first_name,
+                last_name: person.args.last_name,
+                telephone: person.args.telephone,
+                address: person.args.address
+            });
         }
 
         async people_remove(id) {
