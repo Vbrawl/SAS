@@ -22,7 +22,7 @@ function dom_list_item(obj_name, obj, is_header = false) {
     const item = document.createElement("div");
     item.classList.add("list-item-wrapper");
     if(is_header) {item.classList.add("list-header");}
-    else {item.setAttribute("data-id", obj_name == "person" ? obj.args.id : obj.id);}
+    else {item.setAttribute("data-id", obj_name == "people" ? obj.args.id : obj.id);}
 
     switch (obj_name) {
         case "template":
