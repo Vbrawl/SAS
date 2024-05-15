@@ -151,11 +151,13 @@
          * @param {int} port The port to the API
          * @param {string} protocol Either "ws" or "wss"
          */
-        connect(host, port, protocol = "ws") {
+        connect(host, port, callback, protocol = "ws") {
             this.ws = new WebSocket(`${protocol}://${host}:${port}/`);
-            this.ws.onmessage = (evt) => {
+            this.ws.addEventListener("message", (evt) => {
                 this.on_message(evt);
-            };
+            });
+
+            this.ws.addEventListener("open", callback);
         }
 
         /**
@@ -205,6 +207,8 @@
             return res;
         }
 
+        // async common_alter(object_name)
+
         async common_remove(object_name, id) {
             const resp = await this.send_and_wait({
                 action: [object_name, "remove"],
@@ -232,8 +236,17 @@
             // TODO: Add template to the database
         }
 
-        template_alter(template) {
+        async template_alter(template) {
             // TODO: Alter template in the database
+            const data = await this.send_and_wait({
+                action: ["template", "alter"],
+                parameters: {
+                    id: template.id,
+                    message: template.message
+                }
+            });
+
+            return data.hasOwnProperty("status") && data.status == "success";
         }
 
         async template_remove(id) {
