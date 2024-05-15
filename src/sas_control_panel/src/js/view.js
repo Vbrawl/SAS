@@ -189,11 +189,16 @@ async function delete_action(object_name) {
 var client = new sasapi.Client();
 document.addEventListener("DOMContentLoaded", () => {
     
-    document.getElementsByClassName("delete-button")[0].addEventListener("click", () => {
+    const delete_button = document.getElementsByClassName("delete-button")[0];
+    const edit_button = document.getElementsByClassName("edit-button")[0];
+
+    delete_button.setAttribute("disabled", "");
+    delete_button.addEventListener("click", () => {
         delete_action(page_object_type);
     });
 
-    document.getElementsByClassName("edit-button")[0].addEventListener("click", () => {
+    edit_button.setAttribute("disabled", "");
+    edit_button.addEventListener("click", () => {
         const items = document.getElementsByClassName("item-selector");
 
         for (let i = 0; i < items.length; i++) {
