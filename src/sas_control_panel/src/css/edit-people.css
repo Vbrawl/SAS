@@ -1,0 +1,23 @@
+:root {
+    --main-body-width: 30em;
+    --detail-label-width: 10em;
+}
+
+.main-body {
+    margin: auto;
+    width: calc(var(--main-body-width));
+    height: 30em;
+}
+
+.person-details {
+    width: 100%;
+}
+
+.detail-label {
+    width: var(--detail-label-width);
+}
+.detail-value {
+    width: calc(100% - 2px);
+    border: 1px solid;
+    padding: 0;
+}

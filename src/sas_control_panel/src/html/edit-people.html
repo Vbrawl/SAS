@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit People</title>
+
+    <!-- <script src="/js/sasapi.js"></script>
+    <script src="/js/edit-people.js"></script> -->
+
+    <link rel="stylesheet" href="/css/master.css">
+    <link rel="stylesheet" href="/css/edit-people.css">
+</head>
+<body>
+    <div class="category-selector">
+        <a class="category" href="/html/view.html?object_type=template">Templates</a>
+        <a class="category" href="/html/view.html?object_type=people">People</a>
+        <a class="category" href="/html/view.html?object_type=rule">Rules</a>
+    </div>
+
+
+    <div class="main-body">
+        <div class="apply-discard-button-holder">
+            <button class="discard-button">Discard</button>
+            <button class="apply-button">Apply</button>
+        </div>
+
+        <table class="person-details">
+            <tr><td class="detail-label">First Name</td><td><input id="first-name-input" class="detail-value" type="text"></td></tr>
+            <tr><td class="detail-label">Last Name</td><td><input id="last-name-input" class="detail-value" type="text"></td></tr>
+            <tr><td class="detail-label">Telephone</td><td><input id="telephone-input" class="detail-value" type="tel"></td></tr>
+            <tr><td class="detail-label">Address</td><td><input id="address-input" class="detail-value" type="text"></td></tr>
+        </table>
+    </div>
+</body>
+</html>
