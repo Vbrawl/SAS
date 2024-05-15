@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if(page_object_id === null) {
             const new_id = await client.template_add(new sasapi.Template(msg));
             GETparams.set("id", new_id);
-            window.Location.search = GETparams.toString();
+            window.location.search = GETparams.toString();
         } else {
             await client.template_alter(new sasapi.Template(msg, page_object_id));
             window.location.reload();
@@ -25,11 +25,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     client.connect("127.0.0.1", 8585, async (evt) => {
-        const templates = await client.template_get(page_object_id);
+        if(page_object_id !== null) {
+            const templates = await client.template_get(page_object_id);
 
-        if(templates.length != 0) {
-            const template = templates[0];
-            document.getElementsByClassName("template-message-text")[0].value = template.message;
+            if(templates.length != 0) {
+                const template = templates[0];
+                document.getElementsByClassName("template-message-text")[0].value = template.message;
+            }
         }
     });
 })
