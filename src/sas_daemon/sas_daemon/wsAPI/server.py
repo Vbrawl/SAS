@@ -136,7 +136,7 @@ class WSAPI:
             if id is None:
                 raise RuntimeError("Unknown error, Template could not be added to the database")
 
-            return {"id": id}
+            return {"added_id": id}
         except Exception:
             return {}
     
@@ -202,7 +202,7 @@ class WSAPI:
             person = parsers.parse_as_person(kwargs)
             id = self.db.add_person(person)
 
-            return {"id": id}
+            return {"added_id": id}
         except Exception:
             return {}
 
@@ -271,7 +271,7 @@ class WSAPI:
             rule = parsers.parse_as_rule(self.db, kwargs)
             id = self.db.add_rule(rule)
 
-            return {"id": id}
+            return {"added_id": id}
         except Exception:
             return {}
     
