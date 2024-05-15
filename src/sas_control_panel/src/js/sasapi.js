@@ -207,7 +207,23 @@
             return res;
         }
 
-        // async common_alter(object_name)
+        async common_add(object_name, params) {
+            const resp = await this.send_and_wait({
+                action: [object_name, "add"],
+                parameters: params
+            });
+
+            return (resp.hasOwnProperty("id") ? resp.id : null);
+        }
+
+        async common_alter(object_name, params) {
+            const resp = await this.send_and_wait({
+                action: [object_name, "alter"],
+                parameters: params
+            });
+
+            return resp.hasOwnProperty("status") && resp.status == "success";
+        }
 
         async common_remove(object_name, id) {
             const resp = await this.send_and_wait({
@@ -233,26 +249,14 @@
         }
 
         async template_add(template) {
-            const data = await this.send_and_wait({
-                action: ["template", "add"],
-                parameters: {
-                    message: template.message
-                }
-            });
-
-            return (data.hasOwnProperty("id") ? data.id : null);
+            return await this.common_add("template", {message: template.message});
         }
 
         async template_alter(template) {
-            const data = await this.send_and_wait({
-                action: ["template", "alter"],
-                parameters: {
-                    id: template.id,
-                    message: template.message
-                }
+            return await this.common_alter("template", {
+                id: template.id,
+                message: template.message
             });
-
-            return data.hasOwnProperty("status") && data.status == "success";
         }
 
         async template_remove(id) {
