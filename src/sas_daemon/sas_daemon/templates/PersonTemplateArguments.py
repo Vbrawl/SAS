@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+from typing import Any
 from .TemplateArguments import TemplateArguments
 
 
@@ -26,3 +28,13 @@ class PersonTemplateArguments(TemplateArguments):
         self.first_name = first_name
         self.last_name = last_name
         self.address = address
+    
+    @classmethod
+    def fromJSON(cls:type[PersonTemplateArguments], data:dict[str, Any]) -> PersonTemplateArguments:
+        return cls(
+            id = data.get("id", None),
+            first_name = data.get("first_name", None),
+            last_name = data.get("last_name", None),
+            telephone = data["telephone"],
+            address = data.get("address", None)
+        )

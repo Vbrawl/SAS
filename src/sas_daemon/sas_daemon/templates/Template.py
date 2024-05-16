@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
 from .TemplateArguments import TemplateArguments
 from typing import Any
 
@@ -62,6 +63,13 @@ class Template:
             "id": self.id,
             "message": self._message
         }
+    
+    @classmethod
+    def fromJSON(cls:type[Template], data:dict[str, Any]) -> Template:
+        return cls(
+            message = data['message'],
+            id = data.get("id", None)
+        )
     
     def compileFor(self, args:TemplateArguments):
         return self._compile_message(self._message, self._marks, args)

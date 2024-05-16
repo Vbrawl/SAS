@@ -21,6 +21,7 @@ from __future__ import annotations
 from typing import Callable, Coroutine, Any
 from datetime import datetime, timedelta
 from ..templates import Template, PersonTemplateArguments
+from ..database import Database
 from .. import Constants
 import asyncio
 
@@ -84,6 +85,31 @@ class SendMessageRule:
             "interval": self._interval.total_seconds(),
             "last_executed": self.str_last_executed
         }
+    
+    @classmethod
+    def fromJSON(cls:type[SendMessageRule], data:dict[str, Any], db:Database) -> SendMessageRule:
+        template:Template|None = db.get_template(data["template"])
+        if template is None:
+            raise ValueError(f"Template with template.id = {data['template']} doesn't exist.")
+
+        recipients = list(filter(
+                            None,
+                            map(db.get_person, data["recipients"])))
+        
+        end_date:str|None = data.get("end_date", None)
+        interval:int = data.get('interval', 0)
+        last_executed:str|None = data.get("last_executed", None)
+        id:int|None = data.get("id", None)
+
+        return cls(
+            recipients = recipients,
+            template = template,
+            start_date = datetime.strptime(data['start_date'], Constants.DATETIME_FORMAT),
+            end_date = datetime.strptime(end_date, Constants.DATETIME_FORMAT) if end_date is not None else None,
+            interval = timedelta(seconds=interval),
+            last_executed = datetime.strptime(last_executed, Constants.DATETIME_FORMAT) if last_executed is not None else None,
+            id = id
+        )
     
     @property
     def str_start_date(self) -> str:
