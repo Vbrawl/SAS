@@ -64,13 +64,14 @@
          * @param {string} message 
          * @param {int} id 
          */
-        constructor(message, id = null) {
+        constructor(message, id = null, label = null) {
             this.id = id;
+            this.label = label;
             this.message = message;
         }
 
         static fromJSON(data) {
-            return new sasapi.Template(data.message, data.id);
+            return new sasapi.Template(data.message, data.id, data.label);
         }
     }
 
@@ -249,12 +250,16 @@
         }
 
         async template_add(template) {
-            return await this.common_add("template", {message: template.message});
+            return await this.common_add("template", {
+                label: template.label,
+                message: template.message
+            });
         }
 
         async template_alter(template) {
             return await this.common_alter("template", {
                 id: template.id,
+                label: template.label,
                 message: template.message
             });
         }

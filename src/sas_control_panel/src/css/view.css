@@ -69,7 +69,7 @@
 /*************
 * List Parts *
 *************/
-.template-message,
+.template-message, .template-label,
 .recipient-count, .start-date, .end-date,
 .first-name, .last-name, .telephone, .address {
     vertical-align: middle;
@@ -80,14 +80,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.template-message {
-    width: calc(99% - var(--button-holder-width) - var(--colon-separator-width));
+.template-message, .template-label {
+    width: calc((99% - var(--button-holder-width)) / 2);
 }
 .recipient-count, .start-date, .end-date {
     width: calc((99% - var(--button-holder-width)) / 3);
 }
 
 .list-header .template-message,
+.list-header .template-label, .template-label,
 .list-header .first-name, .first-name,
 .list-header .last-name, .last-name,
 .list-header .telephone, .telephone,

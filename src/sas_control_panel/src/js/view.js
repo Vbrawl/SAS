@@ -26,7 +26,9 @@ function dom_list_item(obj_name, obj, is_header = false) {
 
     switch (obj_name) {
         case "template":
-            add_section(item, "template-message", is_header ? "Template Message" : obj.message);
+            add_section(item, "template-label", is_header ? "Label" : obj.label);
+            add_colon(item);
+            add_section(item, "template-message", is_header ? "Message" : obj.message);
             break;
         case "people":
             add_section(item, "first-name", is_header ? "First Name" : obj.args.first_name);

@@ -11,15 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementsByClassName("apply-button")[0].addEventListener("click", async () => {
-        const dom_msg = document.getElementsByClassName("template-message-text")[0];
-        const msg = dom_msg.value;
+        const msg = document.getElementsByClassName("template-message-text")[0].value;
+        const label = document.getElementById("template-label-text").value;
 
         if(page_object_id === null) {
-            const new_id = await client.template_add(new sasapi.Template(msg));
+            const new_id = await client.template_add(new sasapi.Template(msg, null, label));
             GETparams.set("id", new_id);
             window.location.search = GETparams.toString();
         } else {
-            await client.template_alter(new sasapi.Template(msg, page_object_id));
+            await client.template_alter(new sasapi.Template(msg, page_object_id, label));
             window.location.reload();
         }
     });
@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if(templates.length != 0) {
                 const template = templates[0];
                 document.getElementsByClassName("template-message-text")[0].value = template.message;
+                document.getElementById("template-label-text").value = template.label;
             }
         }
     });

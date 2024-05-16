@@ -15,7 +15,20 @@
 
 
 .template-message-text {
-    width: 100%;
+    width: calc(100% - 2px);
+    border: 1px black solid;
     height: 100%;
     resize: none;
+    padding: 0;
+}
+
+.template-label {
+    display: flex;
+    width: 100%;
+}
+
+#template-label-text {
+    width: 100%;
+    border: 1px black solid;
+    margin-left: 4px;
 }
