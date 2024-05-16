@@ -53,14 +53,16 @@ class Template:
             offset += val_len - placeholder_len - 1
         return message
 
-    def __init__(self, message:str, id:int|None = None):
+    def __init__(self, message:str, id:int|None = None, label:str|None = None):
         self.id = id
+        self.label = label
         self._message = message
         self._marks = self._parse_message(message)
     
     def toJSON(self) -> dict[str, Any]:
         return {
             "id": self.id,
+            "label": self.label,
             "message": self._message
         }
     
@@ -68,7 +70,8 @@ class Template:
     def fromJSON(cls:type[Template], data:dict[str, Any]) -> Template:
         return cls(
             message = data['message'],
-            id = data.get("id", None)
+            id = data.get("id", None),
+            label = data.get("label", None)
         )
     
     def compileFor(self, args:TemplateArguments):

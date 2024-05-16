@@ -53,6 +53,7 @@ class Database:
         ########################################################
         self.conn.execute('''CREATE TABLE IF NOT EXISTS `Templates` (
                           `id` INTEGER NOT NULL UNIQUE,
+                          `label` TEXT,
                           `message` TEXT NOT NULL,
                           PRIMARY KEY(`id`));''')
         
@@ -187,7 +188,7 @@ class Database:
             return Template(id=id, message=res[0])
     
     def get_templates(self, limit:int|None = None, offset:int|None = None) -> list[Template]:
-        query:str = 'SELECT `id`, `message` FROM `Templates`'
+        query:str = 'SELECT `id`, `label`, `message` FROM `Templates`'
         params:tuple = tuple()
         if limit is not None:
             query += " LIMIT ?"
@@ -196,12 +197,13 @@ class Database:
                 query += " OFFSET ?"
                 params = (limit, offset)
         cur = self.conn.execute(query, params)
-        res:list[tuple[int, str]] = cur.fetchall()
-        return list(map(lambda x: Template(id=x[0], message=x[1]), res))
+        res:list[tuple[int|None, str|None, str]] = cur.fetchall()
+        return list(map(lambda x: Template(id=x[0], label=x[1], message=x[2]), res))
     
     def add_template(self, template:Template) -> int|None:
+        label = template.label
         message = template._message
-        self.conn.execute("INSERT INTO `Templates` (`message`) VALUES (?)", (message,))
+        self.conn.execute("INSERT INTO `Templates` (`label`, `message`) VALUES (?, ?)", (label, message))
         cur = self.conn.execute("SELECT last_insert_rowid();")
         res = cur.fetchone()
         self.conn.commit()
@@ -227,9 +229,10 @@ class Database:
             id = template.id
         if id is None:
             raise ValueError("You must provide an ID either through the parameters or template(id)")
-        
+
+        label = template.label        
         message = template._message
-        self.conn.execute("UPDATE `Templates` SET `message`=? WHERE `id`=?;", (message,id))
+        self.conn.execute("UPDATE `Templates` SET `label`=?, `message`=? WHERE `id`=?;", (label, message, id))
         self.conn.commit()
     
     def delete_template(self, id:int):
