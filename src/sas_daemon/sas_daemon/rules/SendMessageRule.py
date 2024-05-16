@@ -29,7 +29,8 @@ import asyncio
 class SendMessageRule:
     def __init__(self, recipients:list[PersonTemplateArguments], template:Template,
                  start_date:datetime, end_date:datetime|None = None,
-                 interval:timedelta|None = None, last_executed:datetime|None = None, id:int|None = None):
+                 interval:timedelta|None = None, last_executed:datetime|None = None,
+                 id:int|None = None, label:str|None = None):
         if end_date is not None and (start_date >= end_date):
             raise ValueError(f"{self.__class__.__qualname__}: Constraint start_date({start_date}) < end_date({end_date}): Failed.")
         # start_date and end_date are valid
@@ -48,6 +49,7 @@ class SendMessageRule:
         self.template = template
         self.recipients = recipients
         self.id = id
+        self.label = label
 
     @property
     def next_execution_date(self) -> datetime|None:
@@ -83,7 +85,8 @@ class SendMessageRule:
             "start_date": self.str_start_date,
             "end_date": self.str_end_date,
             "interval": self._interval.total_seconds(),
-            "last_executed": self.str_last_executed
+            "last_executed": self.str_last_executed,
+            "label": self.label
         }
     
     @classmethod
@@ -100,6 +103,7 @@ class SendMessageRule:
         interval:int = data.get('interval', 0)
         last_executed:str|None = data.get("last_executed", None)
         id:int|None = data.get("id", None)
+        label:str|None = data.get("label", None)
 
         return cls(
             recipients = recipients,
@@ -108,7 +112,8 @@ class SendMessageRule:
             end_date = datetime.strptime(end_date, Constants.DATETIME_FORMAT) if end_date is not None else None,
             interval = timedelta(seconds=interval),
             last_executed = datetime.strptime(last_executed, Constants.DATETIME_FORMAT) if last_executed is not None else None,
-            id = id
+            id = id,
+            label = label
         )
     
     @property
