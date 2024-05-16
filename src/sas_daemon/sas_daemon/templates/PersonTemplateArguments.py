@@ -22,7 +22,7 @@ class PersonTemplateArguments(TemplateArguments):
     def __init__(self, *, telephone:str, id:int|None = None, first_name:str|None = None, last_name:str|None = None, address:str|None = None, **kwargs):
         self.__dict__.update(kwargs)
         self.telephone = telephone
-        if id is not None: self.id = id
-        if first_name is not None: self.first_name = first_name
-        if last_name is not None: self.last_name = last_name
-        if address is not None: self.address = address
+        self.id = id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.address = address

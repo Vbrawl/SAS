@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from dataclasses import dataclass
+from typing import Any
 
 @dataclass(frozen=True)
 class TemplateArguments:
@@ -22,3 +23,6 @@ class TemplateArguments:
     
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}({', '.join(map(lambda x: x[0]+'='+repr(x[1]), self.__dict__.items()))})"
+    
+    def toJSON(self) -> dict[str, Any]:
+        return self.__dict__

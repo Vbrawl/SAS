@@ -18,7 +18,7 @@ dates and other info necessary for sending messages at certain intervals/dates. 
 is part of the "SAS-Commons" module of the "SAS" project.
 '''
 from __future__ import annotations
-from typing import Callable, Coroutine
+from typing import Callable, Coroutine, Any
 from datetime import datetime, timedelta
 from ..templates import Template, PersonTemplateArguments
 import asyncio
@@ -72,6 +72,17 @@ class SendMessageRule:
             else:
                 return None
         return next_date
+    
+    def toJSON(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "recipients": list(map(lambda j: j.id, self.recipients)),
+            "template": self.template.id,
+            "start_date": self._start_date.strftime("%Y-%m-%d %H:%M:%S.%f"),
+            "end_date": self._end_date.strftime("%Y-%m-%d %H:%M:%S.%f") if self._end_date else None,
+            "interval": self._interval.total_seconds(),
+            "last_executed": self._last_executed.strftime("%Y-%m-%d %H:%M:%S.%f") if self._last_executed else None
+        }
     
     @property
     def next_execution(self) -> timedelta|None:

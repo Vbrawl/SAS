@@ -119,10 +119,7 @@ class WSAPI:
 
             return {
                 "results": list(map(
-                    lambda x: {
-                        "id": x.id,
-                        "message": x._message
-                    },
+                    lambda x: x.toJSON(),
                     results))
             }
         except Exception:
@@ -185,13 +182,7 @@ class WSAPI:
             
             return {
                 "results": list(map(
-                    lambda x: {
-                        "id": getattr(x, "id", None),
-                        "first_name": getattr(x, "first_name", None),
-                        "last_name": getattr(x, "last_name", None),
-                        "telephone": x.telephone,
-                        "address": getattr(x, "address", None)
-                    },
+                    lambda x: x.toJSON(),
                     results))
             }
         except Exception:
@@ -252,15 +243,7 @@ class WSAPI:
 
             return {
                 "results": list(map(
-                    lambda x: {
-                        "id": x.id,
-                        "recipients": list(map(lambda j: j.id, x.recipients)),
-                        "template": x.template.id,
-                        "start_date": x._start_date.strftime("%Y-%m-%d %H:%M:%S.%f"),
-                        "end_date": x._end_date.strftime("%Y-%m-%d %H:%M:%S.%f") if x._end_date else None,
-                        "interval": x._interval.total_seconds(),
-                        "last_executed": x._last_executed.strftime("%Y-%m-%d %H:%M:%S.%f") if x._last_executed else None
-                    },
+                    lambda x: x.toJSON(),
                     results))
             }
         except Exception:

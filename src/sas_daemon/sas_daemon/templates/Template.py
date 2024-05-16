@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from .TemplateArguments import TemplateArguments
+from typing import Any
 
 
 
@@ -55,6 +56,12 @@ class Template:
         self.id = id
         self._message = message
         self._marks = self._parse_message(message)
+    
+    def toJSON(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "message": self._message
+        }
     
     def compileFor(self, args:TemplateArguments):
         return self._compile_message(self._message, self._marks, args)
