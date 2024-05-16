@@ -21,6 +21,7 @@ from __future__ import annotations
 from typing import Callable, Coroutine, Any
 from datetime import datetime, timedelta
 from ..templates import Template, PersonTemplateArguments
+from .. import Constants
 import asyncio
 
 
@@ -78,11 +79,23 @@ class SendMessageRule:
             "id": self.id,
             "recipients": list(map(lambda j: j.id, self.recipients)),
             "template": self.template.id,
-            "start_date": self._start_date.strftime("%Y-%m-%d %H:%M:%S.%f"),
-            "end_date": self._end_date.strftime("%Y-%m-%d %H:%M:%S.%f") if self._end_date else None,
+            "start_date": self.str_start_date,
+            "end_date": self.str_end_date,
             "interval": self._interval.total_seconds(),
-            "last_executed": self._last_executed.strftime("%Y-%m-%d %H:%M:%S.%f") if self._last_executed else None
+            "last_executed": self.str_last_executed
         }
+    
+    @property
+    def str_start_date(self) -> str:
+        return self._start_date.strftime(Constants.DATETIME_FORMAT)
+    
+    @property
+    def str_end_date(self) -> str|None:
+        return self._end_date.strftime(Constants.DATETIME_FORMAT) if self._end_date else None
+    
+    @property
+    def str_last_executed(self) -> str|None:
+        return self._last_executed.strftime(Constants.DATETIME_FORMAT) if self._last_executed else None
     
     @property
     def next_execution(self) -> timedelta|None:
