@@ -182,10 +182,10 @@ class Database:
         self.conn.commit()
     
     def get_template(self, id:int) -> Template|None:
-        cur = self.conn.execute("SELECT `message` FROM `Templates` WHERE `id`=?;", (id,))
-        res:tuple[str]|None = cur.fetchone()
+        cur = self.conn.execute("SELECT `label`, `message` FROM `Templates` WHERE `id`=?;", (id,))
+        res:tuple[str|None, str]|None = cur.fetchone()
         if res:
-            return Template(id=id, message=res[0])
+            return Template(id=id, label=res[0], message=res[1])
     
     def get_templates(self, limit:int|None = None, offset:int|None = None) -> list[Template]:
         query:str = 'SELECT `id`, `label`, `message` FROM `Templates`'
@@ -240,8 +240,8 @@ class Database:
         self.conn.commit()
     
     def get_rule(self, id:int) -> SendMessageRule|None:
-        cur = self.conn.execute("SELECT T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id WHERE SMR.id=?;", (id,))
-        res:tuple[int, str, str, str|None, int|None, str|None]|None = cur.fetchone()
+        cur = self.conn.execute("SELECT T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval`, SMR.`last_executed`, SMR.`label` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id WHERE SMR.id=?;", (id,))
+        res:tuple[int, str, str, str|None, int|None, str|None, str|None]|None = cur.fetchone()
         if res:
             return SendMessageRule(
                 self.get_recipients(id),
@@ -250,7 +250,8 @@ class Database:
                 datetime.strptime(res[3], Constants.DATETIME_FORMAT) if res[3] else None,
                 timedelta(seconds=res[4] if res[4] else 0),
                 datetime.strptime(res[5], Constants.DATETIME_FORMAT) if res[5] else None,
-                id=id
+                id=id,
+                label=res[6]
             )
     
     def get_rules(self, limit:int|None = None, offset:int|None = None) -> list[SendMessageRule]:
