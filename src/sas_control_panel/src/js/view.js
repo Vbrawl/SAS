@@ -40,6 +40,9 @@ function dom_list_item(obj_name, obj, is_header = false) {
             add_section(item, "address", is_header ? "Address" : obj.args.address);
             break;
         case "rule":
+            console.log(obj);
+            add_section(item, "rule-label", is_header ? "Label" : obj.label);
+            add_colon(item);
             add_section(item, "recipient-count", is_header ? 'Recipient Count' : obj.recipients.length);
             add_colon(item);
             add_section(item, "start-date", is_header ? "Start Date" : sasapi.date_to_string(obj.start_date));

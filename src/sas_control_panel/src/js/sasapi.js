@@ -85,7 +85,7 @@
          * @param {Date} last_executed 
          * @param {int} id 
          */
-        constructor(recipients, template, start_date, end_date = null, interval = 0, last_executed = null, id = null) {
+        constructor(recipients, template, start_date, end_date = null, interval = 0, last_executed = null, id = null, label = null) {
             this.recipients = recipients;
             this.template = template;
             this.start_date = start_date;
@@ -93,6 +93,7 @@
             this.interval = interval;
             this.last_executed = last_executed;
             this.id = id;
+            this.label = label;
         }
 
 
@@ -104,7 +105,8 @@
                 data.end_date ? sasapi.date_from_string(data.end_date) : null,
                 data.interval,
                 data.last_executed ? sasapi.date_from_string(data.last_executed) : null,
-                data.id
+                data.id,
+                data.label
             );
         }
     }
