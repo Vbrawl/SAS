@@ -1,0 +1,10 @@
+[Unit]
+Description=Send Automated SMS
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/sas
+ExecStart=/Path/To/sas-daemon
+
+[Install]
+WantedBy=multi-user.target
