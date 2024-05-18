@@ -80,7 +80,7 @@
         }
 
         render(custom_handler = () => {}) {
-            this.dom_element.html = '';
+            this.dom_element.innerHTML = '';
 
             for (let i = 0; i < this.items.length; i++) {
                 const item = this.items[i];
