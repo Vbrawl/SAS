@@ -157,7 +157,7 @@
          * @param {int} port The port to the API
          * @param {string} protocol Either "ws" or "wss"
          */
-        connect(callback, host, port, protocol) {
+        connect(callback, host = null, port = null, protocol = null) {
             if(host === null) host = sasapi.DEFAULT_HOST;
             if(port === null) port = sasapi.DEFAULT_PORT;
             if(protocol === null) protocol = sasapi.DEFAULT_PROTOCOL;
