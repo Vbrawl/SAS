@@ -46,8 +46,12 @@ async function delete_action(object_name) {
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if(item.checked) {
-            const itemID = parseInt(item.parentElement.parentElement.getAttribute("data-id"));
-            operations.push(client.common_remove(object_name, itemID));
+            const item_parent = item.parentElement.parentElement;
+            if (item_parent.classList.contains("list-header")) {continue;}
+            const itemID = parseInt(item_parent.getAttribute("data-id"));
+            if(itemID !== null) {
+                operations.push(client.common_remove(object_name, itemID));
+            }
         }
     }
 
@@ -65,6 +69,9 @@ async function delete_action(object_name) {
  */
 var client = new sasapi.Client();
 document.addEventListener("DOMContentLoaded", () => {
+
+    document.getElementsByClassName("add-button")[0].parentElement.setAttribute("href", `/html/edit-${page_object_type}.html`);
+
     const dlist = new domlist.DOMList(document.getElementsByClassName("list")[0]);
     const delete_button = document.getElementsByClassName("delete-button")[0];
     const edit_button = document.getElementsByClassName("edit-button")[0];
