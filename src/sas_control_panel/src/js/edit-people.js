@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 lname,
                 address
             ));
-            // window.location.reload();
+            window.location.reload();
         }
     });
 
