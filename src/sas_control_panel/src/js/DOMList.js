@@ -165,11 +165,11 @@
 
             this.add_section(item, "rule-label", is_header ? "Label" : this.obj.label);
             this.add_colon(item);
-            this.add_section(item, "recipient-count", is_header ? "Recipient Count" : obj.recipients.length);
+            this.add_section(item, "recipient-count", is_header ? "Recipient Count" : this.obj.recipients.length);
             this.add_colon(item);
             this.add_section(item, "start-date", is_header ? "Start Date" : sasapi.date_to_string(this.obj.start_date));
             this.add_colon(item);
-            this.add_section(item, "end-date", is_header ? "End Date" : (this,obj.end_date ? sasapi.date_to_string(this.obj.end_date) : ''));
+            this.add_section(item, "end-date", is_header ? "End Date" : (this.obj.end_date ? sasapi.date_to_string(this.obj.end_date) : ''));
         }
     }
 
