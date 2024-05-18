@@ -37,8 +37,8 @@ class Daemon:
 
     async def rule_add_and_register(self, wsapi:WSAPI, **kwargs):
         res = await wsapi.rule_add(**kwargs)
-        if "id" in res:
-            id:int = res["id"]
+        if "added_id" in res:
+            id:int = res["added_id"]
             rule:SendMessageRule = self.db.get_rule(id) # type: ignore
             async with self.op_lock:
                 self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
