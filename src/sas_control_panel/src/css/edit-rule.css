@@ -1,0 +1,42 @@
+:root {
+    --main-body-width: 50em;
+    --detail-label-width: 10em;
+    /* --list-minimum-width: 30em; */
+}
+
+.main-body {
+    margin: auto;
+    width: calc(var(--main-body-width));
+    height: 30em;
+}
+
+.rule-details {
+    width: 100%;
+}
+
+.rule-label {
+    display: flex;
+    width: 100%;
+}
+#rule-label-text {
+    width: 100%;
+    border: 1px black solid;
+    margin-left: 4px;
+}
+
+.rule-value {
+    width: calc(100% - 2px);
+    border: 1px solid;
+    padding: 0;
+}
+
+.rule-date, .rule-time,
+#interval, #interval-unit {
+    width: calc(100% / 2 - 4px);
+    border: 1px solid;
+    padding: 0;
+}
+
+.rule-people-title {
+    margin-top: 2em;
+}

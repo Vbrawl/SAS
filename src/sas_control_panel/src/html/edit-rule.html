@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Rule</title>
 
+    <script src="/js/DOMList.js"></script>
     <script src="/js/sasapi.js"></script>
     <script src="/js/edit-rule.js"></script>
 
     <link rel="stylesheet" href="/css/master.css">
+    <link rel="stylesheet" href="/css/view.css">
     <link rel="stylesheet" href="/css/edit-rule.css">
 </head>
 <body>
@@ -29,18 +31,19 @@
             <input id="rule-label-text" type="text">
         </div>
         <table class="rule-details">
-            <tr><td class="detail-label">Template</td><td><select id="template-selector"></select></td></tr>
-            <tr><td class="detail-label">Start At</td><td><input type="date" id="start-input-date"><input type="time" id="start-input-time"></td></tr>
-            <tr><td class="detail-label">End At</td><td><input type="date" id="end-input-date"><input type="time" id="end-input-time"></td></tr>
+            <tr><td class="detail-label">Template</td><td><select id="template-selector" class="rule-value"></select></td></tr>
+            <tr><td class="detail-label">Start At</td><td><input type="date" id="start-input-date" class="rule-date"><input type="time" id="start-input-time" class="rule-time"></td></tr>
+            <tr><td class="detail-label">End At</td><td><input type="date" id="end-input-date" class="rule-date"><input type="time" id="end-input-time" class="rule-time"></td></tr>
             <tr><td class="detail-label">Send Every</td><td><input type="number" id="interval" value="1"><select id="interval-unit">
                 <option value="1" selected>Days</option>
                 <option value="2">Hours</option>
                 <option value="3">Minutes</option>
             </select></td></tr>
-            <tr><td class="detail-label">Last Triggered</td><td><input type="date" id="lastexecuted-input-date" disabled><input type="time" id="lastexecuted-input-time" disabled></td></tr>
+            <tr><td class="detail-label">Last Triggered</td><td><input type="date" id="lastexecuted-input-date" class="rule-date" disabled><input type="time" id="lastexecuted-input-time" class="rule-time" disabled></td></tr>
         </table>
 
-        <!-- DO SOMETHING FOR SELECTING RECIPIENTS -->
+        <div class="rule-people-title">People</div>
+        <div id="recipient-selector" class="list"></div>
     </div>
 </body>
 </html>

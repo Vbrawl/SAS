@@ -44,6 +44,7 @@
             }
             const checkbox = document.createElement('input');
             checkbox.classList.add('item-selector');
+            checkbox.checked = this.selected;
             checkbox.setAttribute('type', 'checkbox');
             if(is_header)
                 {checkbox.addEventListener('change', set_state__all);}
@@ -66,6 +67,7 @@
         constructor(dom_element) {
             this.dom_element = dom_element;
             this.items = [];
+            this.selected = false;
         }
 
         add_item(item) {

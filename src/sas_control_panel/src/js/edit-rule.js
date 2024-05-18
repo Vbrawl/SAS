@@ -55,33 +55,41 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Start date/time is required.");
             return;
         }
-
+        
         const end_at = parse_datetime(document.getElementById("end-input-date"), document.getElementById("end-input-time"));
         const interval = parse_interval(document.getElementById("interval"), document.getElementById("interval-unit"));
         const last_executed = parse_datetime(document.getElementById("lastexecuted-input-date"), document.getElementById("lastexecuted-input-time"));
     });
-
+    
     client.connect("127.0.0.1", 8585, async (evt) => {
+        const recipient_list = new domlist.DOMList(document.getElementById("recipient-selector"));
+        const people = await client.people_get();
+        for (let i = 0; i < people.length; i++) {
+            const person = people[i];
+            recipient_list.add_item(new domlist.PeopleDOMListItem(person));
+        }
+
         if(page_object_id !== null) {
             const rules = await client.rule_get(page_object_id, 1);
-
+            
             if(rules.length != 0) {
                 const rule = rules[0];
-
+                
                 document.getElementById("rule-label-text").value = rule.label;
-
+                
                 fill_template_selector(
                     document.getElementById("template-selector"),
-                    await client.template_get());
+                    await client.template_get(),
+                    rule.template);
 
                 document.getElementById("start-input-date").value = `${rule.start_date.getFullYear()}-${String(rule.start_date.getMonth()+1).padStart(2, '0')}-${String(rule.start_date.getDate()).padStart(2, '0')}`;
                 document.getElementById("start-input-time").value = `${String(rule.start_date.getHours()).padStart(2, '0')}:${String(rule.start_date.getMinutes()).padStart(2, '0')}`;
-
+                    
                 if(rule.end_date !== null) {
                     document.getElementById("end-input-date").value = `${rule.end_date.getFullYear()}-${String(rule.end_date.getMonth()+1).padStart(2, '0')}-${String(rule.end_date.getDate()).padStart(2, '0')}`;
                     document.getElementById("end-input-time").value = `${String(rule.end_date.getHours()).padStart(2, '0')}:${String(rule.end_date.getMinutes()).padStart(2, '0')}`;
                 }
-
+                    
                 // Decide unit
                 var interval = rule.interval;
                 var interval_unit = 4;
@@ -100,13 +108,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(interval_unit === 4) {interval = 0; interval_unit = 1;}
                 document.getElementById("interval").value = interval;
                 document.getElementById("interval-unit").value = interval_unit;
-
+                
                 if(rule.last_executed !== null) {
                     document.getElementById("lastexecuted-input-date").value = `${rule.last_executed.getFullYear()}-${String(rule.last_executed.getMonth()+1).padStart(2, '0')}-${String(rule.last_executed.getDate()).padStart(2, '0')}`;
                     document.getElementById("lastexecuted-input-time").value = `${String(rule.last_executed.getHours()).padStart(2, '0')}:${String(rule.last_executed.getMinutes()).padStart(2, '0')}`;
                 }
+
+                for (let i = 0; i < rule.recipients.length; i++) {
+                    const recipientID = rule.recipients[i];
+                    for (let j = 0; j < recipient_list.items.length; j++) {
+                        const item = recipient_list.items[j];
+                        if(item.obj.args.id == recipientID) {
+                            item.selected = true;
+                        }
+                    }
+                }
+
             }
         }
-    });
+        else {
+            fill_template_selector(
+                document.getElementById("template-selector"),
+                await client.template_get());
+        }
+            
+        recipient_list.render();
+        });
 
-});
+    });
