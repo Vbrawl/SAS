@@ -15,8 +15,8 @@ function parse_datetime(dom_date, dom_time) {
 }
 
 function parse_interval(dom_interval, dom_interval_unit) {
-    const mInterval = dom_interval.value; // number
-    const mIntervalUnit = dom_interval_unit.value; // 1-5
+    const mInterval = parseInt(dom_interval.value); // number
+    const mIntervalUnit = parseInt(dom_interval_unit.value); // 1-5
 
     var ret = mInterval;
     switch (mIntervalUnit) {
@@ -49,7 +49,20 @@ function fill_template_selector(template_selector, templates, selected_template_
 
 const client = new sasapi.Client();
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementsByClassName("apply-button")[0].addEventListener("click", () => {
+    const recipient_list = new domlist.DOMList(document.getElementById("recipient-selector"));
+
+    document.getElementsByClassName("discard-button")[0].addEventListener("click", () => {
+        window.location.reload();
+    });
+
+    document.getElementsByClassName("apply-button")[0].addEventListener("click", async () => {
+        const label = document.getElementById("rule-label-text").value;
+        const template = document.getElementById("template-selector").value;
+        if(template === '') {
+            alert("You need to select a template");
+            return;
+        }
+
         const start_at = parse_datetime(document.getElementById("start-input-date"), document.getElementById("start-input-time"));
         if(start_at === null) {
             alert("Start date/time is required.");
@@ -59,10 +72,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const end_at = parse_datetime(document.getElementById("end-input-date"), document.getElementById("end-input-time"));
         const interval = parse_interval(document.getElementById("interval"), document.getElementById("interval-unit"));
         const last_executed = parse_datetime(document.getElementById("lastexecuted-input-date"), document.getElementById("lastexecuted-input-time"));
+
+        const checkboxes = document.getElementsByClassName("item-selector");
+        const recipients = [];
+
+        for (let i = 0; i < checkboxes.length; i++) {
+            const checkbox = checkboxes[i];
+            if(checkbox.checked) {
+                recipients.push(parseInt(checkbox.parentElement.parentElement.getAttribute("data-id")));
+            }
+        }
+
+        if(page_object_id === null) {
+            const new_id = await client.rule_add(new sasapi.SendMessageRule(
+                recipients,
+                template,
+                start_at,
+                end_at,
+                interval,
+                last_executed,
+                null,
+                label
+            ));
+            GETparams.set("id", new_id);
+            window.location.search = GETparams.toString();
+        }
+        else {
+            await client.rule_alter(new sasapi.SendMessageRule(
+                recipients,
+                template,
+                start_at,
+                end_at,
+                interval,
+                last_executed,
+                page_object_id,
+                label
+            ));
+            window.location.reload();
+        }
     });
     
     client.connect("127.0.0.1", 8585, async (evt) => {
-        const recipient_list = new domlist.DOMList(document.getElementById("recipient-selector"));
         const people = await client.people_get();
         for (let i = 0; i < people.length; i++) {
             const person = people[i];

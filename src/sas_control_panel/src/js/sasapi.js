@@ -302,12 +302,29 @@
             return await this.common_get(sasapi.SendMessageRule, "rule", id, limit, offset);
         }
 
-        rule_add() {
-            // TODO: Implement me
+        async rule_add(obj) {
+            return await this.common_add("rule", {
+                label: obj.label,
+                template: obj.template,
+                recipients: obj.recipients,
+                start_date: sasapi.date_to_string(obj.start_date),
+                end_date: obj.end_date === null ? null : sasapi.date_to_string(obj.end_date),
+                interval: obj.interval,
+                last_executed: obj.last_executed === null ? null : sasapi.date_to_string(obj.end_date)
+            });
         }
 
-        rule_alter() {
-            // TODO: Implement me
+        async rule_alter(obj) {
+            return await this.common_alter("rule", {
+                label: obj.label,
+                id: obj.id,
+                template: obj.template,
+                recipients: obj.recipients,
+                start_date: sasapi.date_to_string(obj.start_date),
+                end_date: obj.end_date === null ? null : sasapi.date_to_string(obj.end_date),
+                interval: obj.interval,
+                last_executed: obj.last_executed === null ? null : sasapi.date_to_string(obj.end_date)
+            });
         }
 
         async rule_remove() {
