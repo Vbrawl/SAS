@@ -125,8 +125,13 @@
 * Action Buttons *
 *****************/
 .action-buttons {
-    width: 100%;
-    height: 5em;
+    display: flex;
+    flex-flow: row-reverse;
 
+    min-width: var(--list-minimum-width);
+    width: 90%;
+
+    margin: auto;
     margin-bottom: 2em;
+
 }
