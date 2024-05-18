@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    client.connect("127.0.0.1", 8585, async (evt) => {
+    client.connect(async (evt) => {
         if(page_object_id !== null) {
             const people = await client.people_get(page_object_id, 1);
 

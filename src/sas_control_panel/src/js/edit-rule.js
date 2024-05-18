@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    client.connect("127.0.0.1", 8585, async (evt) => {
+    client.connect(async (evt) => {
         const people = await client.people_get();
         for (let i = 0; i < people.length; i++) {
             const person = people[i];

@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    client.connect("127.0.0.1", 8585, async (evt) => {
+    client.connect(async (evt) => {
         let temp_items = [];
         var items = [];
 

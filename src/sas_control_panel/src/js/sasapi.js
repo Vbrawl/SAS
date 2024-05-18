@@ -3,6 +3,9 @@
 
 
 (function(sasapi) {
+    sasapi.DEFAULT_PROTOCOL = "ws";
+    sasapi.DEFAULT_HOST = "127.0.0.1";
+    sasapi.DEFAULT_PORT = 8585;
 
     sasapi.date_from_string = function(s) {
         const splits        = s.split(' ');
@@ -154,7 +157,11 @@
          * @param {int} port The port to the API
          * @param {string} protocol Either "ws" or "wss"
          */
-        connect(host, port, callback, protocol = "ws") {
+        connect(callback, host, port, protocol) {
+            if(host === null) host = sasapi.DEFAULT_HOST;
+            if(port === null) port = sasapi.DEFAULT_PORT;
+            if(protocol === null) protocol = sasapi.DEFAULT_PROTOCOL;
+
             this.ws = new WebSocket(`${protocol}://${host}:${port}/`);
             this.ws.addEventListener("message", (evt) => {
                 this.on_message(evt);
@@ -323,7 +330,7 @@
                 start_date: sasapi.date_to_string(obj.start_date),
                 end_date: obj.end_date === null ? null : sasapi.date_to_string(obj.end_date),
                 interval: obj.interval,
-                last_executed: obj.last_executed === null ? null : sasapi.date_to_string(obj.end_date)
+                last_executed: obj.last_executed === null ? null : sasapi.date_to_string(obj.last_executed)
             });
         }
 

@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    client.connect("127.0.0.1", 8585, async (evt) => {
+    client.connect(async (evt) => {
         if(page_object_id !== null) {
             const templates = await client.template_get(page_object_id);
 
