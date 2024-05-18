@@ -41,7 +41,7 @@ class Daemon:
             id:int = res["id"]
             rule:SendMessageRule = self.db.get_rule(id) # type: ignore
             async with self.op_lock:
-                self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms))
+                self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
         return res
 
     async def rule_alter_and_register(self, wsapi:WSAPI, **kwargs):
@@ -56,7 +56,7 @@ class Daemon:
                 if rule is None:
                     del self.operations[id]
                 else:
-                    self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms))
+                    self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
         return res
     
     async def rule_deregister_and_remove(self, wsapi:WSAPI, **kwargs):
@@ -84,6 +84,9 @@ class Daemon:
             # TODO: Use telnyx API to send a message
             print(msg)
     
+    async def update_rule_last_executed(self, rule:SendMessageRule):
+        self.db.alter_rule(rule)
+    
     async def collect_rules_indefinitely(self):
         while True:
             async with self.op_lock:
@@ -99,8 +102,7 @@ class Daemon:
     async def start(self):
         for rule in self.db.get_rules():
             if rule.id is not None:
-                self.operations[rule.id] = asyncio.create_task(rule.infschedule(self.send_sms))
-        
+                self.operations[rule.id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
 
         await self.wsapi.start_server()
         await self.collect_rules_indefinitely()

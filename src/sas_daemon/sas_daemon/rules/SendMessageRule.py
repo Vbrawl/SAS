@@ -59,8 +59,11 @@ class SendMessageRule:
             return None
 
         # If the starting date is in the future we don't need to add any intervals.
-        if self._last_executed is None and self._start_date >= dtnow:
-            return self._start_date
+        if self._last_executed is None:
+            if self._start_date >= dtnow:
+                return self._start_date
+            else:
+                return dtnow
 
         next_date = self._last_executed
         if next_date is None:
@@ -141,7 +144,7 @@ class SendMessageRule:
     def report_executed(self):
         self._last_executed = datetime.now()
 
-    async def schedule(self, callback:Callable[[SendMessageRule], Coroutine]):
+    async def schedule(self, callback:Callable[[SendMessageRule], Coroutine], report_executed_callback:Callable[[SendMessageRule], Coroutine]):
         # Wait until execution
         ne = self.next_execution
         if ne and ne != timedelta(0): await asyncio.sleep(ne.total_seconds())
@@ -151,7 +154,8 @@ class SendMessageRule:
 
         # update execution time
         self.report_executed()
+        await asyncio.create_task(report_executed_callback(self))
 
-    async def infschedule(self, callback:Callable[[SendMessageRule], Coroutine]):
+    async def infschedule(self, callback:Callable[[SendMessageRule], Coroutine], report_executed_callback:Callable[[SendMessageRule], Coroutine]):
         while self.next_execution_date is not None:
-            await self.schedule(callback)
+            await self.schedule(callback, report_executed_callback)
