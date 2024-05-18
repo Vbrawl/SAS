@@ -76,7 +76,7 @@ class Daemon:
                 template = temp
 
         for recipient in pta.recipients:
-            if getattr(recipient, "id", None) is not None:
+            if recipient.id is not None:
                 temp = self.db.get_person(recipient.id)
                 if temp is not None:
                     recipient = temp
