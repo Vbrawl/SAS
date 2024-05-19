@@ -1,12 +1,18 @@
 
+WEBSITE_DIR="/var/www/sas"
 DAEMON_DIR="/opt/SAS"
 PYTHON_EXE="/bin/python"
 SERVICE_DIR="/etc/systemd/system"
 
 DAEMON_SOURCE="../src/sas_daemon"
+WEBSITE_SOURCE="../src/sas_control_panel"
 
-# Create daemon directory
+# Create directories
+mkdir -p $WEBSITE_DIR
 mkdir -p $DAEMON_DIR
+
+# Copy website
+cp -R "${WEBSITE_SOURCE}/src" $WEBSITE_DIR
 
 # Create virtual environment directory
 $PYTHON_EXE -m venv "${DAEMON_DIR}/.venv"
