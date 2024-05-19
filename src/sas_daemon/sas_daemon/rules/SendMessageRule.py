@@ -20,6 +20,7 @@ is part of the "SAS-Commons" module of the "SAS" project.
 from __future__ import annotations
 from typing import Callable, Coroutine, Any
 from datetime import datetime, timedelta
+from ..datetimezone import datetimezone
 from ..templates import Template, PersonTemplateArguments
 from ..database import Database
 from .. import Constants
@@ -28,17 +29,17 @@ import asyncio
 
 class SendMessageRule:
     def __init__(self, recipients:list[PersonTemplateArguments], template:Template,
-                 start_date:datetime, end_date:datetime|None = None,
-                 interval:timedelta|None = None, last_executed:datetime|None = None,
+                 start_date:datetimezone, end_date:datetimezone|None = None,
+                 interval:timedelta|None = None, last_executed:datetimezone|None = None,
                  id:int|None = None, label:str|None = None):
-        if end_date is not None and (start_date >= end_date):
-            raise ValueError(f"{self.__class__.__qualname__}: Constraint start_date({start_date}) < end_date({end_date}): Failed.")
+        if end_date is not None and (start_date.get() >= end_date.get()):
+            raise ValueError(f"{self.__class__.__qualname__}: Constraint start_date({start_date.get()}) < end_date({end_date}): Failed.")
         # start_date and end_date are valid
         
-        if last_executed is not None and (start_date > last_executed):
-            raise ValueError(f"{self.__class__.__qualname__}: Constraint start_date({start_date}) <= last_executed({last_executed}): Failed")
-        if last_executed is not None and end_date is not None and (last_executed > end_date):
-            raise ValueError(f"{self.__class__.__qualname__}: Constraint last_executed({last_executed}) <= end_date({end_date}): Failed")
+        if last_executed is not None and (start_date.get() > last_executed.get()):
+            raise ValueError(f"{self.__class__.__qualname__}: Constraint start_date({start_date.get()}) <= last_executed({last_executed.get()}): Failed")
+        if last_executed is not None and end_date is not None and (last_executed.get() > end_date.get()):
+            raise ValueError(f"{self.__class__.__qualname__}: Constraint last_executed({last_executed.get()}) <= end_date({end_date.get()}): Failed")
         # last_executed is valid
 
 
@@ -52,15 +53,15 @@ class SendMessageRule:
         self.label = label
 
     @property
-    def next_execution_date(self) -> datetime|None:
-        dtnow = datetime.now()
+    def next_execution_date(self) -> datetimezone|None:
+        dtnow = datetimezone.now()
 
         if self._last_executed is not None and self._interval == timedelta():
             return None
 
         # If the starting date is in the future we don't need to add any intervals.
         if self._last_executed is None:
-            if self._start_date >= dtnow:
+            if self._start_date.get() >= dtnow.get():
                 return self._start_date
             else:
                 return dtnow
@@ -70,11 +71,11 @@ class SendMessageRule:
             next_date = self._start_date
         # AT THIS POINT: next_date is a datetime with the last available known execution
 
-        next_date += self._interval
+        next_date = datetimezone(next_date.get() + self._interval)
         # AT THIS POINT: next_date holds the next execution date (Could be in the past)
 
-        if self._end_date and next_date > self._end_date:
-            if self._last_executed and self._last_executed < self._end_date:
+        if self._end_date and next_date.get() > self._end_date.get():
+            if self._last_executed and self._last_executed.get() < self._end_date.get():
                 return self._end_date
             else:
                 return None
@@ -111,38 +112,38 @@ class SendMessageRule:
         return cls(
             recipients = recipients,
             template = template,
-            start_date = datetime.strptime(data['start_date'], Constants.DATETIME_FORMAT),
-            end_date = datetime.strptime(end_date, Constants.DATETIME_FORMAT) if end_date is not None else None,
+            start_date = datetimezone(datetime.strptime(data['start_date'], Constants.DATETIME_FORMAT)),
+            end_date = datetimezone(datetime.strptime(end_date, Constants.DATETIME_FORMAT)) if end_date is not None else None,
             interval = timedelta(seconds=interval),
-            last_executed = datetime.strptime(last_executed, Constants.DATETIME_FORMAT) if last_executed is not None else None,
+            last_executed = datetimezone(datetime.strptime(last_executed, Constants.DATETIME_FORMAT)) if last_executed is not None else None,
             id = id,
             label = label
         )
     
     @property
     def str_start_date(self) -> str:
-        return self._start_date.strftime(Constants.DATETIME_FORMAT)
+        return self._start_date.get().strftime(Constants.DATETIME_FORMAT)
     
     @property
     def str_end_date(self) -> str|None:
-        return self._end_date.strftime(Constants.DATETIME_FORMAT) if self._end_date else None
+        return self._end_date.get().strftime(Constants.DATETIME_FORMAT) if self._end_date else None
     
     @property
     def str_last_executed(self) -> str|None:
-        return self._last_executed.strftime(Constants.DATETIME_FORMAT) if self._last_executed else None
+        return self._last_executed.get().strftime(Constants.DATETIME_FORMAT) if self._last_executed else None
     
     @property
     def next_execution(self) -> timedelta|None:
-        dtnow = datetime.now()
+        dtnow = datetimezone.now()
         # next_execution_date
         ned = self.next_execution_date
 
         if not ned: return None
-        if dtnow >= ned: return timedelta() # 0
-        return ned - dtnow
+        if dtnow.get() >= ned.get(): return timedelta() # 0
+        return ned.get() - dtnow.get()
     
     def report_executed(self):
-        self._last_executed = datetime.now()
+        self._last_executed = datetimezone.now()
 
     async def schedule(self, callback:Callable[[SendMessageRule], Coroutine], report_executed_callback:Callable[[SendMessageRule], Coroutine]):
         # Wait until execution

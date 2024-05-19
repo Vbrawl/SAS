@@ -18,6 +18,7 @@ class Database: pass # type: ignore
 
 from .templates import PersonTemplateArguments, Template
 from .rules import SendMessageRule
+from .datetimezone import datetimezone
 from . import Constants
 from datetime import datetime, timedelta
 import sqlite3
@@ -246,10 +247,10 @@ class Database:
             return SendMessageRule(
                 self.get_recipients(id),
                 Template(id=res[0], message=res[1]),
-                datetime.strptime(res[2], Constants.DATETIME_FORMAT),
-                datetime.strptime(res[3], Constants.DATETIME_FORMAT) if res[3] else None,
+                datetimezone(datetime.strptime(res[2], Constants.DATETIME_FORMAT)),
+                datetimezone(datetime.strptime(res[3], Constants.DATETIME_FORMAT)) if res[3] else None,
                 timedelta(seconds=res[4] if res[4] else 0),
-                datetime.strptime(res[5], Constants.DATETIME_FORMAT) if res[5] else None,
+                datetimezone(datetime.strptime(res[5], Constants.DATETIME_FORMAT)) if res[5] else None,
                 id=id,
                 label=res[6]
             )
@@ -274,10 +275,10 @@ class Database:
                                 label=x[1],
                                 recipients=self.get_recipients(x[0]),
                                 template=Template(id=x[2], message=x[3]),
-                                start_date=datetime.strptime(x[4], Constants.DATETIME_FORMAT),
-                                end_date=datetime.strptime(x[5], Constants.DATETIME_FORMAT) if x[5] else None,
+                                start_date=datetimezone(datetime.strptime(x[4], Constants.DATETIME_FORMAT)),
+                                end_date=datetimezone(datetime.strptime(x[5], Constants.DATETIME_FORMAT)) if x[5] else None,
                                 interval=timedelta(seconds=x[6] if x[6] else 0),
-                                last_executed=datetime.strptime(x[7], Constants.DATETIME_FORMAT) if x[7] else None
+                                last_executed=datetimezone(datetime.strptime(x[7], Constants.DATETIME_FORMAT)) if x[7] else None
                             ), res))
         return []
     

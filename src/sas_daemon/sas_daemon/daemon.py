@@ -15,6 +15,8 @@ limitations under the License.
 '''
 from .database import Database
 from .rules import SendMessageRule
+from .datetimezone import datetimezone
+import pytz
 from . import Constants
 from .wsAPI.server import WSAPI
 import asyncio
@@ -34,6 +36,20 @@ class Daemon:
         self.wsapi.OPTIONS["rule"]["add"] = self.rule_add_and_register # type: ignore
         self.wsapi.OPTIONS["rule"]["alter"] = self.rule_alter_and_register # type: ignore
         self.wsapi.OPTIONS["rule"]["remove"] = self.rule_deregister_and_remove # type: ignore
+
+
+
+    async def update_timezone(self, wsapi:WSAPI, **kwargs):
+        datetimezone.set_tz(pytz.timezone("Europe/Athens"))
+        async with self.op_lock:
+            all_ids = set(self.operations.keys())
+            for id in all_ids:
+                self.operations[id].cancel()
+                rule = self.db.get_rule(id)
+                if rule is None:
+                    del self.operations[id]
+                else:
+                    self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
 
     async def rule_add_and_register(self, wsapi:WSAPI, **kwargs):
         res = await wsapi.rule_add(**kwargs)
