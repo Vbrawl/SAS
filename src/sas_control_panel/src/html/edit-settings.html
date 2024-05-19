@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+
+    <link rel="stylesheet" href="/css/master.css">
+    <link rel="stylesheet" href="/css/edit-settings.css">
+
+    <script src="/js/sasapi.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/edit-settings.js"></script>
+</head>
+<body>
+    <div class="category-selector">
+        <a class="category" href="/html/view.html?object_type=template">Templates</a>
+        <a class="category" href="/html/view.html?object_type=people">People</a>
+        <a class="category" href="/html/view.html?object_type=rule">Rules</a>
+        <a class="category" href="/html/edit-settings.html">Settings</a>
+    </div>
+    <table class="settings-table">
+        <tr><td class="name">Password</td><td class="value"><button id="change-password">Change</button></td></tr>
+        <tr><td class="value" colspan="2"><button id="logout">Log Out</button></td></tr>
+    </table>
+</body>
+</html>

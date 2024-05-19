@@ -1,0 +1,11 @@
+
+
+.settings-table {
+    width: 15em;
+    margin: auto;
+}
+
+#change-password,
+#logout {
+    width: 100%;
+}

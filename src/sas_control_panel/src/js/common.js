@@ -9,12 +9,14 @@ function getCookie(key) {
     }
 }
 
-const APP_USERNAME = getCookie("username");
-const APP_PASSWORD = getCookie("password");
+var APP_USERNAME = getCookie("username");
+var APP_PASSWORD = getCookie("password");
 
 if(!APP_USERNAME || !APP_PASSWORD) {
     window.location = "/index.html";
 }
 else {
-    var client = new sasapi.Client(atob(APP_USERNAME), atob(APP_PASSWORD));
+    APP_USERNAME = atob(APP_USERNAME);
+    APP_PASSWORD = atob(APP_PASSWORD);
+    var client = new sasapi.Client(APP_USERNAME, APP_PASSWORD);
 }
