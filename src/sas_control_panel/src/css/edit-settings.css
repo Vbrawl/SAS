@@ -5,7 +5,7 @@
     margin: auto;
 }
 
-#change-password,
-#logout {
+.settings-table button,
+.settings-table select {
     width: 100%;
 }

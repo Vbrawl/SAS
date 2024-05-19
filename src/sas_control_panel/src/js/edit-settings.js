@@ -20,9 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("logout").addEventListener("click", () => {
         document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         document.cookie = "password=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        window.location = "/index.html"
+        window.location = "/index.html";
     });
 
-    client.connect();
+    document.getElementById("save-settings").addEventListener("click", async () => {
+        const timezone_identifier = document.getElementById("timezone-selector").value;
+        await client.timezone_alter(timezone_identifier);
+    });
+
+    client.connect(async () => {
+        document.getElementById("timezone-selector").value = await client.timezone_get();
+    });
 
 });

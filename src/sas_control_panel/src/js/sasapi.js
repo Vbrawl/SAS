@@ -357,5 +357,21 @@
                 new_password: new_password
             });
         }
+
+        async timezone_get() {
+            var resp = await this.send_and_wait({
+                action: ["timezone", "get"],
+                parameters: {}
+            });
+
+            if(resp.hasOwnProperty("timezone"))
+                {return resp.timezone;}
+        }
+
+        async timezone_alter(timezone_identifier) {
+            return await this.common_alter("timezone", {
+                timezone: timezone_identifier
+            })
+        }
     }
 }(window.sasapi = window.sasapi || {}))
