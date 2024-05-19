@@ -23,7 +23,7 @@ class Security:
     def needs_rehash(self, user:User):
         return self.ph.check_needs_rehash(user.password)
     
-    def rehash_password(self, user:User, password:str):
+    def set_password(self, user:User, password:str):
         user.password = self.ph.hash(password)
     
     def login(self, username:str, password:str) -> User|None:
@@ -35,7 +35,7 @@ class Security:
 
         # Rehash if needed
         if self.needs_rehash(user):
-            self.rehash_password(user, password)
+            self.set_password(user, password)
             self.db.alter_user(user)
         
         # Return the logged in user
