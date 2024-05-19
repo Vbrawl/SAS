@@ -138,7 +138,9 @@
     }
 
     sasapi.Client = class {
-        constructor() {
+        constructor(username, password) {
+            this.username = username;
+            this.password = password;
             this.ws = null;
             this.requests = {};
         }
@@ -191,6 +193,8 @@
         async send_and_wait(req) {
             const mid = this.generateID();
             req.id = mid;
+            req.username = this.username;
+            req.password = this.password;
             this.ws.send(JSON.stringify(req));
 
             const request = new sasapi.ClientRequest();
@@ -336,6 +340,15 @@
 
         async rule_remove() {
             return await this.common_remove("rule", id);
+        }
+
+        async users_login() {
+            var resp = await this.send_and_wait({
+                action: ["users", "login"],
+                parameters: {}
+            });
+
+            return (resp.hasOwnProperty("status") && resp.status === "success");
         }
     }
 }(window.sasapi = window.sasapi || {}))

@@ -4,7 +4,7 @@ page_object_id = (page_object_id ? parseInt(page_object_id) : null);
 
 
 
-const client = new sasapi.Client();
+// Client is initialized in common.js
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementsByClassName("discard-button")[0].addEventListener("click", () => {
         window.location.reload();

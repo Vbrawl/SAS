@@ -47,7 +47,7 @@ function fill_template_selector(template_selector, templates, selected_template_
     }
 }
 
-const client = new sasapi.Client();
+// Client is initialized in common.js
 document.addEventListener('DOMContentLoaded', () => {
     const recipient_list = new domlist.DOMList(document.getElementById("recipient-selector"));
 

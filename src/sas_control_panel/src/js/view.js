@@ -67,7 +67,7 @@ async function delete_action(object_name) {
 /**
  * The entry point of the script.
  */
-var client = new sasapi.Client();
+// Client is initialized in common.js
 document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementsByClassName("add-button")[0].parentElement.setAttribute("href", `/html/edit-${page_object_type}.html`);
