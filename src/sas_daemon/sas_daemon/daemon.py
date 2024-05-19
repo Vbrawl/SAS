@@ -16,7 +16,7 @@ limitations under the License.
 from .database import Database
 from .rules import SendMessageRule
 from .datetimezone import datetimezone
-from .security import Security
+from .security import Security, User
 import pytz
 from . import Constants
 from .wsAPI.server import WSAPI
@@ -53,7 +53,7 @@ class Daemon:
                 else:
                     self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
 
-    async def rule_add_and_register(self, wsapi:WSAPI, **kwargs):
+    async def rule_add_and_register(self, wsapi:WSAPI, current_user:User, **kwargs):
         res = await wsapi.rule_add(**kwargs)
         if "added_id" in res:
             id:int = res["added_id"]
@@ -62,7 +62,7 @@ class Daemon:
                 self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
         return res
 
-    async def rule_alter_and_register(self, wsapi:WSAPI, **kwargs):
+    async def rule_alter_and_register(self, wsapi:WSAPI, current_user:User, **kwargs):
         res = await wsapi.rule_alter(**kwargs)
         if "status" in res and res["status"] == "success":
             id:int = kwargs["id"]
@@ -77,7 +77,7 @@ class Daemon:
                     self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
         return res
     
-    async def rule_deregister_and_remove(self, wsapi:WSAPI, **kwargs):
+    async def rule_deregister_and_remove(self, wsapi:WSAPI, current_user:User, **kwargs):
         id = kwargs.get("id", None)
         if isinstance(id, int):
             async with self.op_lock:

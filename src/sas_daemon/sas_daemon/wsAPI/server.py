@@ -15,7 +15,7 @@ limitations under the License.
 '''
 from typing import Callable, Coroutine, Any
 from ..database import Database
-from ..security import Security
+from ..security import Security, User
 from ..templates import Template, PersonTemplateArguments
 from ..rules import SendMessageRule
 from . import parsers
@@ -69,20 +69,21 @@ class WSAPI:
             "remove": WSAPI.rule_remove
         },
         "users": {
-            "login": WSAPI.report_login
+            "login": WSAPI.report_login,
+            "alter": WSAPI.user_alter
         }
     }
     
     async def start_server(self):
         await websockets.serve(ws_handler=self.handle, host=self.host, port=self.port)
     
-    def navigate_options(self, message_parts:list[str], kwargs:dict[str, Any]) -> Coroutine[Any, Any, dict]|None:
+    def navigate_options(self, current_user:User, message_parts:list[str], kwargs:dict[str, Any]) -> Coroutine[Any, Any, dict]|None:
         # Navigate to the correct endpoint
         nav:dict[str, dict|Callable]|Callable[[Any], Coroutine[Any, Any, dict]] = self.OPTIONS
         try:
             for part in message_parts:
                 nav = nav[part] # type: ignore
-            return nav(self, **kwargs) # type: ignore
+            return nav(self, current_user, **kwargs) # type: ignore
         except Exception:
             return None
 
@@ -91,9 +92,9 @@ class WSAPI:
         async for message in ws: # type: ignore
             try:
                 packet = json.loads(message)
-                login = (self.security.login(packet["username"], packet["password"]) is not None)
-                if login:
-                    task = self.navigate_options(packet["action"], packet["parameters"])
+                user = self.security.login(packet["username"], packet["password"])
+                if user is not None:
+                    task = self.navigate_options(user, packet["action"], packet["parameters"])
                     res = await task # type: ignore
                 else:
                     res = {}
@@ -104,7 +105,7 @@ class WSAPI:
                 continue
 
     
-    async def template_get(self, **kwargs) -> dict:
+    async def template_get(self, current_user:User, **kwargs) -> dict:
         try:
             # get ID
             id:int|None = kwargs.get("id", None)
@@ -135,7 +136,7 @@ class WSAPI:
         except Exception:
             return {}
     
-    async def template_add(self, **kwargs) -> dict:
+    async def template_add(self, current_user:User, **kwargs) -> dict:
         try:
             template = parsers.parse_as_template(kwargs)
             id = self.db.add_template(template)
@@ -147,7 +148,7 @@ class WSAPI:
         except Exception:
             return {}
     
-    async def template_alter(self, **kwargs) -> dict:
+    async def template_alter(self, current_user:User, **kwargs) -> dict:
         try:
             template = parsers.parse_as_template(kwargs, True)
             self.db.alter_template(template)
@@ -156,7 +157,7 @@ class WSAPI:
         except Exception:
             return {}
     
-    async def template_remove(self, **kwargs) -> dict:
+    async def template_remove(self, current_user:User, **kwargs) -> dict:
         try:
             id:int = kwargs["id"]
             if not isinstance(id, int): raise TypeError("Invalid ID parameter")
@@ -167,7 +168,7 @@ class WSAPI:
             return {}
     
 
-    async def people_get(self, **kwargs) -> dict:
+    async def people_get(self, current_user:User, **kwargs) -> dict:
         try:
             # get ID
             id:int|None = kwargs.get("id", None)
@@ -198,7 +199,7 @@ class WSAPI:
         except Exception:
             return {}
 
-    async def people_add(self, **kwargs) -> dict:
+    async def people_add(self, current_user:User, **kwargs) -> dict:
         try:
             person = parsers.parse_as_person(kwargs)
             id = self.db.add_person(person)
@@ -207,7 +208,7 @@ class WSAPI:
         except Exception:
             return {}
 
-    async def people_alter(self, **kwargs) -> dict:
+    async def people_alter(self, current_user:User, **kwargs) -> dict:
         try:
             person = parsers.parse_as_person(kwargs, True)
             self.db.alter_person(person=person)
@@ -216,7 +217,7 @@ class WSAPI:
         except Exception:
             return {}
 
-    async def people_remove(self, **kwargs) -> dict:
+    async def people_remove(self, current_user:User, **kwargs) -> dict:
         try:
             id:int = kwargs["id"]
             if not isinstance(id, int): raise TypeError("Invalid ID parameter")
@@ -228,7 +229,7 @@ class WSAPI:
         
 
 
-    async def rule_get(self, **kwargs) -> dict:
+    async def rule_get(self, current_user:User, **kwargs) -> dict:
         try:
             # get ID
             id:int|None = kwargs.get("id", None)
@@ -259,7 +260,7 @@ class WSAPI:
         except Exception:
             return {}
     
-    async def rule_add(self, **kwargs) -> dict:
+    async def rule_add(self, current_user:User, **kwargs) -> dict:
         try:
             rule = parsers.parse_as_rule(self.db, kwargs)
             id = self.db.add_rule(rule)
@@ -268,7 +269,7 @@ class WSAPI:
         except Exception:
             return {}
     
-    async def rule_alter(self, **kwargs) -> dict:
+    async def rule_alter(self, current_user:User, **kwargs) -> dict:
         try:
             rule = parsers.parse_as_rule(self.db, kwargs, True)
             self.db.alter_rule(rule)
@@ -277,7 +278,7 @@ class WSAPI:
         except Exception:
             return {}
 
-    async def rule_remove(self, **kwargs) -> dict:
+    async def rule_remove(self, current_user:User, **kwargs) -> dict:
         try:
             id:int = kwargs["id"]
             if not isinstance(id, int): raise TypeError("Invalid ID parameter")
@@ -287,8 +288,21 @@ class WSAPI:
         except Exception:
             return {}
 
-    async def report_login(self, **kwargs) -> dict:
+    async def report_login(self, current_user:User, **kwargs) -> dict:
         try:
+            return {"status": "success"}
+        except Exception:
+            return {}
+    
+    async def user_alter(self, current_user:User, **kwargs) -> dict:
+        try:
+            new_username = kwargs["new_username"]
+            new_password = kwargs["new_password"]
+            
+            current_user.username = new_username
+            self.security.set_password(current_user, new_password)
+
+            self.db.alter_user(current_user)
             return {"status": "success"}
         except Exception:
             return {}
