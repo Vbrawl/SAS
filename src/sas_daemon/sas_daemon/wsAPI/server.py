@@ -289,6 +289,6 @@ class WSAPI:
 
     async def report_login(self, **kwargs) -> dict:
         try:
-            return {"login": kwargs["username"]}
+            return {"status": "success"}
         except Exception:
             return {}

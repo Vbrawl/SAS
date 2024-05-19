@@ -15,13 +15,16 @@ class Security:
         )
     
     def check_password(self, user:User, password:str) -> bool:
-        return self.ph.verify(user.password, password)
+        try:
+            return self.ph.verify(user.password, password)
+        except Exception:
+            return False
     
     def needs_rehash(self, user:User):
         return self.ph.check_needs_rehash(user.password)
     
-    def rehash_password(self, user:User):
-        user.password = self.ph.hash(user.password)
+    def rehash_password(self, user:User, password:str):
+        user.password = self.ph.hash(password)
     
     def login(self, username:str, password:str) -> User|None:
         user = self.db.get_user(username)
@@ -32,7 +35,7 @@ class Security:
 
         # Rehash if needed
         if self.needs_rehash(user):
-            self.rehash_password(user)
+            self.rehash_password(user, password)
             self.db.alter_user(user)
         
         # Return the logged in user
