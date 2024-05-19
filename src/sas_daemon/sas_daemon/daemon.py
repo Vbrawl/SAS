@@ -38,20 +38,26 @@ class Daemon:
         self.wsapi.OPTIONS["rule"]["add"] = self.rule_add_and_register # type: ignore
         self.wsapi.OPTIONS["rule"]["alter"] = self.rule_alter_and_register # type: ignore
         self.wsapi.OPTIONS["rule"]["remove"] = self.rule_deregister_and_remove # type: ignore
+        self.wsapi.OPTIONS["timezone"]["alter"] = self.update_timezone # type: ignore
 
 
 
-    async def update_timezone(self, wsapi:WSAPI, **kwargs):
-        datetimezone.set_tz(pytz.timezone("Europe/Athens"))
-        async with self.op_lock:
-            all_ids = set(self.operations.keys())
-            for id in all_ids:
-                self.operations[id].cancel()
-                rule = self.db.get_rule(id)
-                if rule is None:
-                    del self.operations[id]
-                else:
-                    self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
+    async def update_timezone(self, wsapi:WSAPI, current_user:User, **kwargs):
+        try:
+            datetimezone.set_tz(pytz.timezone(kwargs["timezone"]))
+            self.db.set_setting("timezone", kwargs["timezone"])
+            async with self.op_lock:
+                all_ids = set(self.operations.keys())
+                for id in all_ids:
+                    self.operations[id].cancel()
+                    rule = self.db.get_rule(id)
+                    if rule is None:
+                        del self.operations[id]
+                    else:
+                        self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
+            return {"status": "success"}
+        except Exception:
+            return {}
 
     async def rule_add_and_register(self, wsapi:WSAPI, current_user:User, **kwargs):
         res = await wsapi.rule_add(**kwargs)
@@ -118,6 +124,9 @@ class Daemon:
             await asyncio.sleep(self.collect_rules_interval)
 
     async def start(self):
+        timezone = self.db.get_setting("timezone")
+        if timezone:
+            datetimezone.set_tz(pytz.timezone(timezone))
         for rule in self.db.get_rules():
             if rule.id is not None:
                 self.operations[rule.id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))

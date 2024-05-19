@@ -96,11 +96,29 @@ class Database:
                           `username` TEXT NOT NULL UNIQUE,
                           `password` TEXT NOT NULL);''')
         
+        ################################
+        # Create `Settings` table      #
+        # This table holds information #
+        # about settings               #
+        ################################
+        self.conn.execute('''CREATE TABLE IF NOT EXISTS `Settings` (
+                          `key` TEXT NOT NULL UNIQUE,
+                          `value` TEXT);''')
+
+
+
+
         ############################
         # Add an admin user        #
         # Credentials: admin:admin #
         ############################
         self.conn.execute('INSERT INTO `Users` (`id`, `username`, `password`) VALUES (1, "admin", "$argon2id$v=19$m=32,t=3,p=4$N253UGNtdnc5TU44aVc2TA$rvmyGjoQKjCE/FxjxlUydQ")')
+
+        #############################
+        # Add some default settings #
+        #############################
+        self.conn.execute('''INSERT INTO `Settings` (`key`, `value`) VALUES
+                          ("timezone", ?);''', (Constants.DEFAULT_TIMEZONE,))
 
         self.conn.commit()
     
@@ -381,4 +399,13 @@ class Database:
     
     def alter_user(self, user:User):
         self.conn.execute("UPDATE `Users` SET `username`=?, `password`=? WHERE `id`=?", (user.username, user.password, user.id))
+        self.conn.commit()
+    
+    def get_setting(self, key:str) -> str|None:
+        cur = self.conn.execute("SELECT `value` FROM `Settings` WHERE `key`=?;", (key,))
+        res:tuple[str]|None = cur.fetchone()
+        if res: return res[0]
+    
+    def set_setting(self, key:str, value:str):
+        self.conn.execute("UPDATE `Settings` SET `value`=? WHERE `key`=?;", (value, key))
         self.conn.commit()

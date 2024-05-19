@@ -71,6 +71,10 @@ class WSAPI:
         "users": {
             "login": WSAPI.report_login,
             "alter": WSAPI.user_alter
+        },
+        "timezone": {
+            "get": WSAPI.timezone_get,
+            "alter": WSAPI.ignore, # needs "timezone" parameter
         }
     }
     
@@ -306,3 +310,16 @@ class WSAPI:
             return {"status": "success"}
         except Exception:
             return {}
+    
+    async def timezone_get(self, current_user:User, **kwargs):
+        try:
+            tz = self.db.get_setting("timezone")
+            if tz:
+                return {"timezone": tz}
+            else:
+                return {}
+        except Exception:
+            return {}
+    
+    async def ignore(self, current_user:User, **kwargs) -> dict:
+        return {}
