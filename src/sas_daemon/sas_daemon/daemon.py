@@ -16,6 +16,7 @@ limitations under the License.
 from .database import Database
 from .rules import SendMessageRule
 from .datetimezone import datetimezone
+from .security import Security
 import pytz
 from . import Constants
 from .wsAPI.server import WSAPI
@@ -28,10 +29,11 @@ class Daemon:
         self.collect_rules_interval = Constants.COLLECT_RULES_INTERVAL
 
         self.db = Database(Constants.DATABASE_FILE)
+        self.security = Security(self.db, Constants.PASSWORD_TIME_COST, Constants.PASSWORD_MEMORY_COST, Constants.PASSWORD_PARALLELISM)
         self.operations:dict[int, asyncio.Task] = {}
         self.op_lock = asyncio.Lock()
 
-        self.wsapi = WSAPI(self.db, Constants.API_ADDRESS, Constants.API_PORT)
+        self.wsapi = WSAPI(self.db, self.security, Constants.API_ADDRESS, Constants.API_PORT)
         # Update when a rule is updated, their attributes are automatically updated before sending.
         self.wsapi.OPTIONS["rule"]["add"] = self.rule_add_and_register # type: ignore
         self.wsapi.OPTIONS["rule"]["alter"] = self.rule_alter_and_register # type: ignore

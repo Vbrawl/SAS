@@ -19,6 +19,7 @@ class Database: pass # type: ignore
 from .templates import PersonTemplateArguments, Template
 from .rules import SendMessageRule
 from .datetimezone import datetimezone
+from .security import User
 from . import Constants
 from datetime import datetime, timedelta
 import sqlite3
@@ -84,6 +85,22 @@ class Database:
                           `last_executed` DATETIME,
                           PRIMARY KEY(`id`),
                           CONSTRAINT FK_templateID FOREIGN KEY (`templateID`) REFERENCES `Templates`(`id`));''')
+
+        ##################################################
+        # Create `Users` table                           #
+        # This table holds login information about users #
+        # NOTE: All users are considered admins for now  #
+        ##################################################
+        self.conn.execute('''CREATE TABLE IF NOT EXISTS `Users` (
+                          `id` INTEGER NOT NULL UNIQUE,
+                          `username` TEXT NOT NULL UNIQUE,
+                          `password` TEXT NOT NULL);''')
+        
+        ############################
+        # Add an admin user        #
+        # Credentials: admin:admin #
+        ############################
+        self.conn.execute('INSERT INTO `Users` (`id`, `username`, `password`) VALUES (1, "admin", "$argon2id$v=19$m=32,t=3,p=4$N253UGNtdnc5TU44aVc2TA$rvmyGjoQKjCE/FxjxlUydQ")')
 
         self.conn.commit()
     
@@ -350,4 +367,18 @@ class Database:
     def delete_rule(self, id:int):
         self.unlink_all_recipients_from_rule(id)
         self.conn.execute("DELETE FROM `SendMessageRule` WHERE `id`=?;", (id,))
+        self.conn.commit()
+    
+    def get_user(self, username:str) -> User|None:
+        cur = self.conn.execute("SELECT `id`, `password` FROM `Users` WHERE `username`=?;", (username,))
+        res:tuple[int, str]|None = cur.fetchone()
+        if res:
+            return User(
+                res[0],
+                username,
+                res[1]
+            )
+    
+    def alter_user(self, user:User):
+        self.conn.execute("UPDATE `Users` SET `username`=?, `password`=? WHERE `id`=?", (user.username, user.password, user.id))
         self.conn.commit()

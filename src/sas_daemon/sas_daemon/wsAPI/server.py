@@ -15,6 +15,7 @@ limitations under the License.
 '''
 from typing import Callable, Coroutine, Any
 from ..database import Database
+from ..security import Security
 from ..templates import Template, PersonTemplateArguments
 from ..rules import SendMessageRule
 from . import parsers
@@ -24,11 +25,14 @@ import websockets
 
 
 class WSAPI:
-    def __init__(self, db:Database, host:str = "0.0.0.0", port:int = 8585):
+    def __init__(self, db:Database, security:Security, host:str = "0.0.0.0", port:int = 8585):
         """WebSocket API
 
         To use this WS API send a JSON object:
         {
+            "id": "whatever value you want",
+            "username": "Username",
+            "password": "Password",
             "action": [...],
             "parameters": {...}
         }
@@ -42,6 +46,7 @@ class WSAPI:
             port (int, optional): The port number to use for the server. Defaults to 8585.
         """
         self.db = db
+        self.security = security
         self.host = host
         self.port = port
         self.OPTIONS:dict[str, dict|Callable] = {
@@ -62,6 +67,9 @@ class WSAPI:
             "add": WSAPI.rule_add,
             "alter": WSAPI.rule_alter,
             "remove": WSAPI.rule_remove
+        },
+        "users": {
+            "login": WSAPI.report_login
         }
     }
     
@@ -83,8 +91,12 @@ class WSAPI:
         async for message in ws: # type: ignore
             try:
                 packet = json.loads(message)
-                task = self.navigate_options(packet["action"], packet["parameters"])
-                res = await task # type: ignore
+                login = (self.security.login(packet["username"], packet["password"]) is not None)
+                if login:
+                    task = self.navigate_options(packet["action"], packet["parameters"])
+                    res = await task # type: ignore
+                else:
+                    res = {}
                 res["id"] = packet["id"]
                 res = json.dumps(res)
                 await ws.send(res)
@@ -272,5 +284,11 @@ class WSAPI:
 
             self.db.delete_rule(id)
             return {"status": "success"}
+        except Exception:
+            return {}
+
+    async def report_login(self, **kwargs) -> dict:
+        try:
+            return {"login": kwargs["username"]}
         except Exception:
             return {}

@@ -21,7 +21,8 @@ classifiers = [
 ]
 dependencies = [
     "websockets",
-    "pytz"
+    "pytz",
+    "argon2-cffi
 ]
 
 [project.scripts]
