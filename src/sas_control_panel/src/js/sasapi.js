@@ -350,5 +350,12 @@
 
             return (resp.hasOwnProperty("status") && resp.status === "success");
         }
+
+        async users_alter(new_username, new_password) {
+            return await this.common_alter("users", {
+                new_username: new_username,
+                new_password: new_password
+            });
+        }
     }
 }(window.sasapi = window.sasapi || {}))
