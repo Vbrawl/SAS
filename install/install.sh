@@ -12,7 +12,7 @@ mkdir -p $WEBSITE_DIR
 mkdir -p $DAEMON_DIR
 
 # Copy website
-cp -R "${WEBSITE_SOURCE}/src/*" $WEBSITE_DIR
+cp -R $WEBSITE_SOURCE/src/* $WEBSITE_DIR
 
 # Create virtual environment directory
 $PYTHON_EXE -m venv "${DAEMON_DIR}/.venv"
