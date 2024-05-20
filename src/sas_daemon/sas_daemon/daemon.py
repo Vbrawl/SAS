@@ -60,7 +60,7 @@ class Daemon:
             return {}
 
     async def rule_add_and_register(self, wsapi:WSAPI, current_user:User, **kwargs):
-        res = await wsapi.rule_add(**kwargs)
+        res = await wsapi.rule_add(current_user, **kwargs)
         if "added_id" in res:
             id:int = res["added_id"]
             rule:SendMessageRule = self.db.get_rule(id) # type: ignore
@@ -69,7 +69,7 @@ class Daemon:
         return res
 
     async def rule_alter_and_register(self, wsapi:WSAPI, current_user:User, **kwargs):
-        res = await wsapi.rule_alter(**kwargs)
+        res = await wsapi.rule_alter(current_user, **kwargs)
         if "status" in res and res["status"] == "success":
             id:int = kwargs["id"]
             rule:SendMessageRule = self.db.get_rule(id) # type: ignore
