@@ -90,7 +90,7 @@ class Daemon:
                 if id in self.operations.keys():
                     self.operations[id].cancel()
                     del self.operations[id]
-        return await wsapi.rule_remove(**kwargs)
+        return await wsapi.rule_remove(current_user, **kwargs)
 
     async def send_sms(self, pta:SendMessageRule): # callback
         template = pta.template
