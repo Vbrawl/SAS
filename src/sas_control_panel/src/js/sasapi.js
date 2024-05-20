@@ -20,9 +20,8 @@
         const hour          = time[0];
         const minute        = time[1];
         const second        = sms_splits[0];
-        const millisec      = sms_splits[1];
-
-        return new Date(year, month - 1, day, hour, minute, second, millisec);
+        
+        return new Date(year, month - 1, day, hour, minute, second);
     }
 
     sasapi.date_to_string = function(d) {
