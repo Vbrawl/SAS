@@ -18,6 +18,7 @@ from ..database import Database
 from ..security import Security, User
 from ..templates import Template, PersonTemplateArguments
 from ..rules import SendMessageRule
+from .. import Constants
 from . import parsers
 import json
 import websockets
@@ -75,6 +76,14 @@ class WSAPI:
         "timezone": {
             "get": WSAPI.timezone_get,
             "alter": WSAPI.ignore, # needs "timezone" parameter
+        },
+        "sms-api-key": {
+            "get": WSAPI.sms_api_key_get,
+            "alter": WSAPI.ignore # needs "api-key" parameter
+        },
+        "telephone": {
+            "get": WSAPI.telephone_get,
+            "alter": WSAPI.ignore # needs "telephone" parameter
         }
     }
     
@@ -313,11 +322,25 @@ class WSAPI:
     
     async def timezone_get(self, current_user:User, **kwargs):
         try:
-            tz = self.db.get_setting("timezone")
+            tz = self.db.get_setting(Constants.DATABASE_TIMEZONE_SETTING)
             if tz:
                 return {"timezone": tz}
             else:
                 return {}
+        except Exception:
+            return {}
+    
+    async def sms_api_key_get(self, current_user:User, **kwargs):
+        try:
+            apikey = self.db.get_setting(Constants.DATABASE_APIKEY_SETTING)
+            return {"api-key": apikey}
+        except Exception:
+            return {}
+    
+    async def telephone_get(self, current_user:User, **kwargs):
+        try:
+            telephone = self.db.get_setting(Constants.DATABASE_TELEPHONE_SETTING)
+            return {"telephone": telephone}
         except Exception:
             return {}
     

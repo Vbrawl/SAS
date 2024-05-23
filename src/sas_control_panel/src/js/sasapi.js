@@ -372,5 +372,37 @@
                 timezone: timezone_identifier
             })
         }
+
+        async sms_api_key_get() {
+            var resp = await this.send_and_wait({
+                action: ["sms-api-key", "get"],
+                parameters: {}
+            });
+
+            if(resp.hasOwnProperty("api-key"))
+                {return resp["api-key"];}
+        }
+
+        async sms_api_key_alter(apikey) {
+            return await this.common_alter("sms-api-key", {
+                "api-key": apikey
+            });
+        }
+
+        async telephone_get() {
+            var resp = await this.send_and_wait({
+                action: ["telephone", "get"],
+                parameters: {}
+            });
+
+            if(resp.hasOwnProperty("telephone"))
+                {return resp.telephone;}
+        }
+
+        async telephone_alter(telephone) {
+            return await this.common_alter("telephone", {
+                "telephone": telephone
+            });
+        }
     }
 }(window.sasapi = window.sasapi || {}))

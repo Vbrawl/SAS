@@ -41,8 +41,35 @@ class Daemon:
         self.wsapi.OPTIONS["rule"]["alter"] = self.rule_alter_and_register # type: ignore
         self.wsapi.OPTIONS["rule"]["remove"] = self.rule_deregister_and_remove # type: ignore
         self.wsapi.OPTIONS["timezone"]["alter"] = self.update_timezone # type: ignore
+        self.wsapi.OPTIONS["sms-api-key"]["alter"] = self.update_apikey # type: ignore
+        self.wsapi.OPTIONS["telephone"]["alter"] = self.update_telephone # type: ignore
 
 
+    async def update_apikey(self, wsapi:WSAPI, current_user:User, **kwargs):
+        try:
+            if kwargs['api-key']:
+                telephone = self.db.get_setting(Constants.DATABASE_TELEPHONE_SETTING)
+                if telephone:
+                    self.sms_gateway = TelnyxAPI(kwargs["api-key"], telephone)
+            else:
+                self.sms_gateway = None
+
+            self.db.set_setting(Constants.DATABASE_APIKEY_SETTING, kwargs['api-key'])
+            return {"status": "success"}
+        except Exception:
+            return {}
+    
+    async def update_telephone(self, wsapi:WSAPI, current_user:User, **kwargs):
+        try:
+            if kwargs['telephone']:
+                apikey = self.db.get_setting(Constants.DATABASE_APIKEY_SETTING)
+                if apikey:
+                    self.sms_gateway = TelnyxAPI(apikey, kwargs['telephone'])
+            else:
+                self.sms_gateway = None
+            return {"status": "success"}
+        except Exception:
+            return {}
 
     async def update_timezone(self, wsapi:WSAPI, current_user:User, **kwargs):
         try:
@@ -131,7 +158,7 @@ class Daemon:
         if api_key is not None and telephone is not None:
             self.sms_gateway = TelnyxAPI(api_key, telephone)
 
-        timezone = self.db.get_setting(Constants.DATABASE_TELEPHONE_SETTING)
+        timezone = self.db.get_setting(Constants.DATABASE_TIMEZONE_SETTING)
         if timezone:
             datetimezone.set_tz(pytz.timezone(timezone))
         for rule in self.db.get_rules():

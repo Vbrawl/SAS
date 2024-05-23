@@ -24,11 +24,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("save-settings").addEventListener("click", async () => {
-        const timezone_identifier = document.getElementById("timezone-selector").value;
-        await client.timezone_alter(timezone_identifier);
+        const operations = [];
+        operations.push(
+            client.sms_api_key_alter(document.getElementById("api-key-field").value));
+        operations.push(
+            client.telephone_alter(document.getElementById("telephone-field").value));
+        operations.push(
+            client.timezone_alter(document.getElementById("timezone-selector").value));
+
+        for (let i = 0; i < operations.length; i++) {
+            const operation = operations[i];
+            await operation;
+        }
     });
 
     client.connect(async () => {
+        document.getElementById("api-key-field").value = await client.sms_api_key_get();
+        document.getElementById("telephone-field").value = await client.telephone_get();
         document.getElementById("timezone-selector").value = await client.timezone_get();
     });
 
