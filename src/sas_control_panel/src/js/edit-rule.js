@@ -94,11 +94,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 null,
                 label
             ));
-            GETparams.set("id", new_id);
-            window.location.search = GETparams.toString();
+
+            if(new_id == null) {}
+            alert(new_id != null ? "New rule added!" : "Rule could not be saved.");
+
+            if(new_id) {
+                GETparams.set("id", new_id);
+                window.location.search = GETparams.toString();
+            }
         }
         else {
-            await client.rule_alter(new sasapi.SendMessageRule(
+            const status = await client.rule_alter(new sasapi.SendMessageRule(
                 recipients,
                 template,
                 start_at,
@@ -108,7 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 page_object_id,
                 label
             ));
-            window.location.reload();
+            alert(status ? "Rule saved!" : "Rule could not be saved.");
+            if(status) {window.location.reload();}
         }
     });
     

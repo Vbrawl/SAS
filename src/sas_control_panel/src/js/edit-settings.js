@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("save-settings").addEventListener("click", async () => {
         const operations = [];
+        var status = true;
         operations.push(
             client.sms_api_key_alter(document.getElementById("api-key-field").value));
         operations.push(
@@ -34,8 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < operations.length; i++) {
             const operation = operations[i];
-            await operation;
+            status &= await operation;
         }
+
+        alert(status ? "Settings saved!" : "Settings could not be saved.");
+        if(status) {window.location.reload();}
     });
 
     client.connect(async () => {

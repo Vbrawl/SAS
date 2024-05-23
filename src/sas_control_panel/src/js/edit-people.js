@@ -23,17 +23,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 lname,
                 address
             ));
-            GETparams.set("id", new_id);
-            window.location.search = GETparams.toString();
+
+            alert(new_id != null ? "New person added!" : "Person could not be saved.");
+            if(new_id != null) {
+                GETparams.set("id", new_id);
+                window.location.search = GETparams.toString();
+            }
         } else {
-            await client.people_alter(new sasapi.PersonTemplateArguments(
+            const status = await client.people_alter(new sasapi.PersonTemplateArguments(
                 telephone,
                 page_object_id,
                 fname,
                 lname,
                 address
             ));
-            window.location.reload();
+
+            alert(status ? "Person saved!" : "Person could not be saved.");
+            if(status) {window.location.reload();}
         }
     });
 

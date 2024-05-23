@@ -16,11 +16,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if(page_object_id === null) {
             const new_id = await client.template_add(new sasapi.Template(msg, null, label));
-            GETparams.set("id", new_id);
-            window.location.search = GETparams.toString();
+
+            alert(new_id != null ? "New template added!" : "Template could not be saved.");
+            if(new_id != null) {
+                GETparams.set("id", new_id);
+                window.location.search = GETparams.toString();
+            }
         } else {
-            await client.template_alter(new sasapi.Template(msg, page_object_id, label));
-            window.location.reload();
+            const status = await client.template_alter(new sasapi.Template(msg, page_object_id, label));
+            alert(status ? "Template saved!" : "Template could not be saved.");
+            if(status) {window.location.reload();}
         }
     });
 
