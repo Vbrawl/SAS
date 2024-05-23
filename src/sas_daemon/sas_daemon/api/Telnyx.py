@@ -13,11 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from .BasicAPI import BasicAPI
+import telnyx
 
-
-
-
-class BasicAPI:
+class TelnyxAPI(BasicAPI):
+    def __init__(self, api_key:str, from_number:str):
+        self.api_key = api_key
+        self.from_number = from_number
 
     def sendSMS(self, telephone:str, message:str):
-        raise NotImplementedError(f"{self.__class__.__qualname__}.sendSMS: Not Implemented!")
+        telnyx.Message.create(
+            api_key = self.api_key,
+            from_   = self.from_number,
+            to      = telephone,
+            text    = message,
+            type    = "SMS"
+        )
