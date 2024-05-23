@@ -20,6 +20,7 @@ from .security import Security, User
 import pytz
 from . import Constants
 from .wsAPI.server import WSAPI
+from .api import TelnyxAPI
 import asyncio
 
 
@@ -30,6 +31,7 @@ class Daemon:
 
         self.db = Database(Constants.DATABASE_FILE)
         self.security = Security(self.db, Constants.PASSWORD_TIME_COST, Constants.PASSWORD_MEMORY_COST, Constants.PASSWORD_PARALLELISM)
+        self.sms_gateway:TelnyxAPI|None = None
         self.operations:dict[int, asyncio.Task] = {}
         self.op_lock = asyncio.Lock()
 
@@ -105,8 +107,8 @@ class Daemon:
                 if temp is not None:
                     recipient = temp
             msg = template.compileFor(recipient)
-            # TODO: Use telnyx API to send a message
-            print(msg)
+            if self.sms_gateway:
+                self.sms_gateway.sendSMS(recipient.telephone.replace(' ', ''), msg)
     
     async def update_rule_last_executed(self, rule:SendMessageRule):
         self.db.alter_rule(rule)
@@ -124,7 +126,12 @@ class Daemon:
             await asyncio.sleep(self.collect_rules_interval)
 
     async def start(self):
-        timezone = self.db.get_setting("timezone")
+        api_key = self.db.get_setting(Constants.DATABASE_APIKEY_SETTING)
+        telephone = self.db.get_setting(Constants.DATABASE_TELEPHONE_SETTING)
+        if api_key is not None and telephone is not None:
+            self.sms_gateway = TelnyxAPI(api_key, telephone)
+
+        timezone = self.db.get_setting(Constants.DATABASE_TELEPHONE_SETTING)
         if timezone:
             datetimezone.set_tz(pytz.timezone(timezone))
         for rule in self.db.get_rules():

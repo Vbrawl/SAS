@@ -117,8 +117,10 @@ class Database:
         #############################
         # Add some default settings #
         #############################
-        self.conn.execute('''INSERT INTO `Settings` (`key`, `value`) VALUES
-                          ("timezone", ?);''', (Constants.DEFAULT_TIMEZONE,))
+        self.conn.executemany('''INSERT INTO `Settings` (`key`, `value`) VALUES (?, ?);''', (
+                                (Constants.DATABASE_TIMEZONE_SETTING, Constants.DEFAULT_TIMEZONE),
+                                (Constants.DATABASE_APIKEY_SETTING, None),
+                                (Constants.DATABASE_TELEPHONE_SETTING, None)))
 
         self.conn.commit()
     
