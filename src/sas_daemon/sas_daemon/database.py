@@ -23,8 +23,9 @@ from .security import User
 from . import Constants
 from datetime import datetime, timedelta
 import sqlite3
-import os
+import os, logging
 
+logger = logging.getLogger("sas.daemon")
 
 class Database:
     def __init__(self, dbName:str):
@@ -32,6 +33,7 @@ class Database:
         self.conn = sqlite3.connect(dbName)
         if initDB:
             self.init_db()
+            logger.info("Database(%s) not found, a new database was initialized!", os.path.abspath(dbName))
     
 
     def init_db(self):
@@ -113,6 +115,7 @@ class Database:
         # Credentials: admin:admin #
         ############################
         self.conn.execute('INSERT INTO `Users` (`id`, `username`, `password`) VALUES (1, "admin", "$argon2id$v=19$m=32,t=3,p=4$N253UGNtdnc5TU44aVc2TA$rvmyGjoQKjCE/FxjxlUydQ")')
+        logger.info("User with default credentials created! (admin:admin)")
 
         #############################
         # Add some default settings #

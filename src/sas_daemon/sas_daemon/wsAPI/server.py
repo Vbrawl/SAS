@@ -22,7 +22,9 @@ from .. import Constants
 from . import parsers
 import json
 import websockets
+import logging
 
+logger = logging.getLogger("sas.daemon.wsapi")
 
 
 class WSAPI:
@@ -89,6 +91,7 @@ class WSAPI:
     
     async def start_server(self):
         await websockets.serve(ws_handler=self.handle, host=self.host, port=self.port)
+        logger.info("Websocket API initialized: ws://%s:%s", self.host, self.port)
     
     def navigate_options(self, current_user:User, message_parts:list[str], kwargs:dict[str, Any]) -> Coroutine[Any, Any, dict]|None:
         # Navigate to the correct endpoint
@@ -102,10 +105,16 @@ class WSAPI:
 
     async def handle(self, ws:websockets.WebSocketServerProtocol):
         message:str
+
+        try:
+            remote_host = ws.remote_address[0]
+        except Exception:
+            remote_host = 'UnknownIP'
+
         async for message in ws: # type: ignore
             try:
                 packet = json.loads(message)
-                user = self.security.login(packet["username"], packet["password"])
+                user = self.security.login(packet["username"], packet["password"], remote_host)
                 if user is not None:
                     task = self.navigate_options(user, packet["action"], packet["parameters"])
                     res = await task # type: ignore
@@ -115,6 +124,7 @@ class WSAPI:
                 res = json.dumps(res)
                 await ws.send(res)
             except Exception:
+                logger.error("%s - %s", remote_host, json.dumps(packet), exc_info=True)
                 continue
 
     

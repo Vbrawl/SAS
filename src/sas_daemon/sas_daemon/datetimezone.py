@@ -2,7 +2,9 @@ from __future__ import annotations
 from datetime import datetime
 from . import Constants
 from pytz import timezone
+import logging
 
+logger = logging.getLogger("sas.daemon")
 
 class datetimezone():
     __timezone__ = timezone(Constants.DEFAULT_TIMEZONE)
@@ -25,6 +27,7 @@ class datetimezone():
     
     @classmethod
     def set_tz(cls, tz):
+        logger.info("Timezone changed to %s", tz.zone)
         cls.__timezone__ = tz
 
     def get(self) -> datetime:

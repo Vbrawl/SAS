@@ -25,7 +25,9 @@ from ..templates import Template, PersonTemplateArguments
 from ..database import Database
 from .. import Constants
 import asyncio
+import logging
 
+logger = logging.getLogger("sas.daemon.rules")
 
 class SendMessageRule:
     def __init__(self, recipients:list[PersonTemplateArguments], template:Template,
@@ -148,7 +150,9 @@ class SendMessageRule:
     async def schedule(self, callback:Callable[[SendMessageRule], Coroutine], report_executed_callback:Callable[[SendMessageRule], Coroutine]):
         # Wait until execution
         ne = self.next_execution
-        if ne and ne != timedelta(0): await asyncio.sleep(ne.total_seconds())
+        if ne and ne != timedelta(0):
+            logger.info("Rule(label=%s) scheduled for ", self.label, (datetimezone.now().get() + ne).strftime(Constants.DATETIME_FORMAT))
+            await asyncio.sleep(ne.total_seconds())
 
         # Prepare callback call
         await asyncio.create_task(callback(self))

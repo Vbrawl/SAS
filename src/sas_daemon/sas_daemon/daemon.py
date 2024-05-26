@@ -22,7 +22,11 @@ from . import Constants
 from .wsAPI.server import WSAPI
 from .api import TelnyxAPI
 import asyncio
+import logging, sys
 
+logger = logging.getLogger("sas.daemon")
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class Daemon:

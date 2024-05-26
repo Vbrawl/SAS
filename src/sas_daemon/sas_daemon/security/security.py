@@ -16,6 +16,9 @@ limitations under the License.
 from .user import User
 from ..database import Database
 import argon2
+import logging
+
+logger = logging.getLogger("sas.daemon.security")
 
 class Security:
     def __init__(self, db:Database,
@@ -41,15 +44,18 @@ class Security:
     def set_password(self, user:User, password:str):
         user.password = self.ph.hash(password)
     
-    def login(self, username:str, password:str) -> User|None:
+    def login(self, username:str, password:str, ip:str = '') -> User|None:
         user = self.db.get_user(username)
 
         # Return None if user doesn't exist or password doesn't match
-        if user is None: return
-        if not self.check_password(user, password): return
+        if user is None or not self.check_password(user, password):
+            logger.warning("%s - %s: Authentication failed!", ip, username)
+            return
+        logger.info("%s - %s: Authentication successful!", ip, username)
 
         # Rehash if needed
         if self.needs_rehash(user):
+            logger.info("%s: Re-hashing password!", username)
             self.set_password(user, password)
             self.db.alter_user(user)
         
