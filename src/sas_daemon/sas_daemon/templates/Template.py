@@ -45,7 +45,8 @@ class Template:
         for mark in marks:
             val = getattr(args, mark[2], None)
             if val is None:
-                raise TypeError("args doesn't have all the required attributes.")
+                continue
+                # raise TypeError("args doesn't have all the required attributes.")
 
             message = message[:offset+mark[0]] + val + message[offset+mark[1]+1:]
             placeholder_len = (mark[1] - mark[0])
