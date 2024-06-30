@@ -151,7 +151,7 @@ class SendMessageRule:
         # Wait until execution
         ne = self.next_execution
         if ne and ne != timedelta(0):
-            logger.info("Rule(label=%s) scheduled for ", self.label, (datetimezone.now().get() + ne).strftime(Constants.DATETIME_FORMAT))
+            logger.info("Rule(label=%s) scheduled for %s", self.label, (datetimezone.now().get() + ne).strftime(Constants.DATETIME_FORMAT))
             await asyncio.sleep(ne.total_seconds())
 
         # Prepare callback call
