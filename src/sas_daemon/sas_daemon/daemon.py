@@ -96,24 +96,26 @@ class Daemon:
         res = await wsapi.rule_add(current_user, **kwargs)
         if "added_id" in res:
             id:int = res["added_id"]
-            rule:SendMessageRule = self.db.get_rule(id) # type: ignore
-            async with self.op_lock:
-                self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
+            rule:SendMessageRule = self.db.get_rule(id)
+            if rule:
+                async with self.op_lock:
+                    self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
         return res
 
     async def rule_alter_and_register(self, wsapi:WSAPI, current_user:User, **kwargs):
         res = await wsapi.rule_alter(current_user, **kwargs)
         if "status" in res and res["status"] == "success":
             id:int = kwargs["id"]
-            rule:SendMessageRule = self.db.get_rule(id) # type: ignore
+            rule:SendMessageRule = self.db.get_rule(id)
 
-            async with self.op_lock:
-                if id in self.operations.keys():
-                    self.operations[id].cancel()
-                if rule is None:
-                    del self.operations[id]
-                else:
-                    self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
+            if rule:
+                async with self.op_lock:
+                    if id in self.operations.keys():
+                        self.operations[id].cancel()
+                    if rule is None:
+                        del self.operations[id]
+                    else:
+                        self.operations[id] = asyncio.create_task(rule.infschedule(self.send_sms, self.update_rule_last_executed))
         return res
     
     async def rule_deregister_and_remove(self, wsapi:WSAPI, current_user:User, **kwargs):

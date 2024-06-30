@@ -284,20 +284,24 @@ class Database:
         cur = self.conn.execute("SELECT T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval`, SMR.`last_executed`, SMR.`label` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id WHERE SMR.id=?;", (id,))
         res:tuple[int, str, str, str|None, int|None, str|None, str|None]|None = cur.fetchone()
         if res:
-            return SendMessageRule(
-                self.get_recipients(id),
-                Template(id=res[0], message=res[1]),
-                datetimezone(datetime.strptime(res[2], Constants.DATETIME_FORMAT)),
-                datetimezone(datetime.strptime(res[3], Constants.DATETIME_FORMAT)) if res[3] else None,
-                timedelta(seconds=res[4] if res[4] else 0),
-                datetimezone(datetime.strptime(res[5], Constants.DATETIME_FORMAT)) if res[5] else None,
-                id=id,
-                label=res[6]
-            )
+            try:
+                return SendMessageRule(
+                    self.get_recipients(id),
+                    Template(id=res[0], message=res[1]),
+                    datetimezone(datetime.strptime(res[2], Constants.DATETIME_FORMAT)),
+                    datetimezone(datetime.strptime(res[3], Constants.DATETIME_FORMAT)) if res[3] else None,
+                    timedelta(seconds=res[4] if res[4] else 0),
+                    datetimezone(datetime.strptime(res[5], Constants.DATETIME_FORMAT)) if res[5] else None,
+                    id=id,
+                    label=res[6]
+                )
+            except ValueError:
+                return None
     
     def get_rules(self, limit:int|None = None, offset:int|None = None) -> list[SendMessageRule]:
         query:str = "SELECT SMR.`id`, SMR.`label`, T.`id`, T.`message`, SMR.`start_date`, SMR.`end_date`, SMR.`interval`, SMR.`last_executed` FROM `SendMessageRule` AS SMR JOIN `Templates` AS T ON SMR.templateID = T.id"
         params:tuple = tuple()
+        results = []
 
         if limit is not None:
             query += " LIMIT ?"
@@ -309,18 +313,22 @@ class Database:
         cur = self.conn.execute(query, params)
         res:list[tuple[int, str, int, str, str, str|None, int|None, str|None]] = cur.fetchall()
         if res:
-            return list(map(lambda x:
-                            SendMessageRule(
-                                id=x[0],
-                                label=x[1],
-                                recipients=self.get_recipients(x[0]),
-                                template=Template(id=x[2], message=x[3]),
-                                start_date=datetimezone(datetime.strptime(x[4], Constants.DATETIME_FORMAT)),
-                                end_date=datetimezone(datetime.strptime(x[5], Constants.DATETIME_FORMAT)) if x[5] else None,
-                                interval=timedelta(seconds=x[6] if x[6] else 0),
-                                last_executed=datetimezone(datetime.strptime(x[7], Constants.DATETIME_FORMAT)) if x[7] else None
-                            ), res))
-        return []
+            for x in res:
+                try:
+                    smr = SendMessageRule(
+                        id=x[0],
+                        label=x[1],
+                        recipients=self.get_recipients(x[0]),
+                        template=Template(id=x[2], message=x[3]),
+                        start_date=datetimezone(datetime.strptime(x[4], Constants.DATETIME_FORMAT)),
+                       end_date=datetimezone(datetime.strptime(x[5], Constants.DATETIME_FORMAT)) if x[5] else None,
+                        interval=timedelta(seconds=x[6] if x[6] else 0),
+                        last_executed=datetimezone(datetime.strptime(x[7], Constants.DATETIME_FORMAT)) if x[7] else None
+                    )
+                    results.append(smr)
+                except ValueError:
+                    pass # ignore
+        return results
     
     def add_rule(self, rule:SendMessageRule) -> int|None:
         recipients = rule.recipients
